@@ -1,0 +1,320 @@
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { Button, Tabs, Descriptions, Tag, Modal, Skeleton, message } from 'antd'
+import {
+  EditOutlined, ArrowLeftOutlined,
+  MailOutlined, PhoneOutlined, EnvironmentOutlined,
+  CalendarOutlined, TeamOutlined, UserOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons'
+import { useEmployee } from '@/hooks/useEmployees'
+import { useTerminateEmployee } from '@/hooks/useEmployees'
+import EmployeeAvatar from '@/components/employee/EmployeeAvatar'
+import StatusBadge from '@/components/employee/StatusBadge'
+import {
+  formatDate, calculateTenure, getAvatarColor,
+} from '@/utils/helpers'
+import { GENDER_LABELS, WORK_TYPE_LABELS, EMPLOYEE_STATUS } from '@/utils/constants'
+import dayjs from 'dayjs'
+
+export default function EmployeeDetail() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { data: employee, isLoading, isError } = useEmployee(id)
+  const terminateMutation = useTerminateEmployee()
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: 24 }}>
+        <Skeleton.Button style={{ width: 100, marginBottom: 24 }} active />
+        <Skeleton avatar={{ size: 80 }} paragraph={{ rows: 4 }} active />
+      </div>
+    )
+  }
+
+  if (isError || !employee) {
+    return (
+      <div style={{ padding: 24, textAlign: 'center' }}>
+        <div style={{ color: 'var(--color-text-muted)', marginBottom: 16 }}>Không tìm thấy nhân viên</div>
+        <Link to="/employees"><Button icon={<ArrowLeftOutlined />}>Quay lại</Button></Link>
+      </div>
+    )
+  }
+
+  const headerColor = getAvatarColor(employee.full_name)
+  const isTerminated = employee.status === EMPLOYEE_STATUS.TERMINATED
+
+  const handleTerminate = () => {
+    Modal.confirm({
+      title: 'Cho nhân viên nghỉ việc?',
+      icon: <ExclamationCircleOutlined style={{ color: '#DC2626' }} />,
+      content: `Xác nhận cho ${employee.full_name} nghỉ việc từ ngày hôm nay. Thao tác này có thể hoàn tác sau.`,
+      okText: 'Xác nhận nghỉ việc',
+      okButtonProps: { danger: true },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        await terminateMutation.mutateAsync({
+          id,
+          terminationDate: dayjs().format('YYYY-MM-DD'),
+        })
+        message.success('Đã cập nhật trạng thái nhân viên')
+        navigate('/employees')
+      },
+    })
+  }
+
+  const tabItems = [
+    {
+      key: 'employment',
+      label: 'Thông tin việc làm',
+      children: <EmploymentTab employee={employee} />,
+    },
+    {
+      key: 'personal',
+      label: 'Thông tin cá nhân',
+      children: <PersonalTab employee={employee} />,
+    },
+  ]
+
+  return (
+    <div style={{ minHeight: 'calc(100vh - 56px)', background: 'var(--color-bg)' }}>
+      {/* Back nav */}
+      <div style={{
+        padding: '12px 24px',
+        background: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-border)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+      }}>
+        <Link to="/employees">
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            size="small"
+            style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans)' }}
+          >
+            Nhân viên
+          </Button>
+        </Link>
+        <span style={{ color: 'var(--color-border)' }}>/</span>
+        <span style={{ fontSize: 13, color: 'var(--color-text-primary)', fontWeight: 500 }}>
+          {employee.full_name}
+        </span>
+      </div>
+
+      {/* Profile Header Card */}
+      <div style={{ padding: '24px 24px 0', maxWidth: 960, margin: '0 auto' }}>
+        <div
+          className="animate-fade-in-up"
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+            marginBottom: 20,
+          }}
+        >
+          {/* Banner */}
+          <div style={{
+            height: 120,
+            background: `linear-gradient(135deg, ${headerColor}20 0%, ${headerColor}08 50%, #F1F5F9 100%)`,
+            borderBottom: `1px solid ${headerColor}15`,
+            position: 'relative',
+          }}>
+            {/* Actions top-right */}
+            <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }}>
+              {!isTerminated && (
+                <>
+                  <Link to={`/employees/${id}/edit`}>
+                    <Button icon={<EditOutlined />} size="small" style={{ background: 'rgba(255,255,255,0.9)' }}>
+                      Chỉnh sửa
+                    </Button>
+                  </Link>
+                  <Button
+                    size="small"
+                    danger
+                    onClick={handleTerminate}
+                    loading={terminateMutation.isPending}
+                    style={{ background: 'rgba(255,255,255,0.9)' }}
+                  >
+                    Cho nghỉ việc
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Profile info row */}
+          <div style={{
+            padding: '0 28px 24px',
+            display: 'flex',
+            gap: 20,
+            alignItems: 'flex-end',
+            marginTop: -36,
+          }}>
+            {/* Avatar */}
+            <div style={{
+              padding: 4,
+              background: 'var(--color-surface)',
+              borderRadius: '50%',
+              boxShadow: '0 0 0 3px var(--color-border)',
+              flexShrink: 0,
+            }}>
+              <EmployeeAvatar
+                name={employee.full_name}
+                avatarUrl={employee.avatar_url}
+                size={72}
+              />
+            </div>
+
+            {/* Name + meta */}
+            <div style={{ paddingBottom: 4, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+                <h1 style={{
+                  margin: 0, fontSize: 22, fontWeight: 800,
+                  color: 'var(--color-text-primary)', lineHeight: 1.2,
+                  letterSpacing: '-0.4px',
+                }}>
+                  {employee.full_name}
+                </h1>
+                <StatusBadge status={employee.status} />
+              </div>
+
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                {employee.designations && (
+                  <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                    {employee.designations.title}
+                  </span>
+                )}
+                {employee.departments && (
+                  <span style={{
+                    fontSize: 12, color: 'var(--color-primary)',
+                    background: 'var(--color-primary-bg)',
+                    padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                  }}>
+                    {employee.departments.name}
+                  </span>
+                )}
+                <span style={{
+                  fontSize: 12, color: 'var(--color-text-muted)',
+                  fontFamily: 'var(--font-mono)',
+                }}>
+                  {employee.employee_id}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick stats right side */}
+            <div style={{
+              display: 'flex', gap: 20, paddingBottom: 4,
+              flexShrink: 0,
+            }}>
+              {employee.date_of_joining && (
+                <QuickStat
+                  icon={<CalendarOutlined />}
+                  label="Năm làm việc"
+                  value={calculateTenure(employee.date_of_joining)}
+                />
+              )}
+              {employee.email && (
+                <QuickStat icon={<MailOutlined />} label="Email" value={employee.email} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div
+          className="animate-fade-in-up"
+          style={{
+            animationDelay: '80ms',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '0 24px',
+            marginBottom: 24,
+          }}
+        >
+          <Tabs items={tabItems} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function QuickStat({ icon, label, value }) {
+  return (
+    <div style={{ textAlign: 'right' }}>
+      <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+        {icon} {label}
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', maxWidth: 180 }} className="text-truncate">
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function EmploymentTab({ employee }) {
+  return (
+    <Descriptions column={2} size="small" style={{ padding: '8px 0 16px' }}>
+      <Descriptions.Item label="Mã nhân viên">
+        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{employee.employee_id}</span>
+      </Descriptions.Item>
+      <Descriptions.Item label="Phòng ban">
+        {employee.departments?.name || '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Chức danh">
+        {employee.designations?.title || '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Quản lý trực tiếp">
+        {employee.manager ? employee.manager.full_name : '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Loại hợp đồng">
+        {WORK_TYPE_LABELS[employee.work_type] || '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Địa điểm làm việc">
+        {employee.work_location || '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Ngày vào làm">
+        {formatDate(employee.date_of_joining)}
+      </Descriptions.Item>
+      {employee.date_of_termination && (
+        <Descriptions.Item label="Ngày nghỉ việc">
+          <span style={{ color: '#DC2626' }}>{formatDate(employee.date_of_termination)}</span>
+        </Descriptions.Item>
+      )}
+      {employee.bio && (
+        <Descriptions.Item label="Giới thiệu" span={2}>
+          <span style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>
+            {employee.bio}
+          </span>
+        </Descriptions.Item>
+      )}
+    </Descriptions>
+  )
+}
+
+function PersonalTab({ employee }) {
+  return (
+    <Descriptions column={2} size="small" style={{ padding: '8px 0 16px' }}>
+      <Descriptions.Item label="Email">
+        <a href={`mailto:${employee.email}`} style={{ color: 'var(--color-primary)' }}>
+          {employee.email}
+        </a>
+      </Descriptions.Item>
+      <Descriptions.Item label="Điện thoại">
+        {employee.phone || '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Giới tính">
+        {GENDER_LABELS[employee.gender] || '—'}
+      </Descriptions.Item>
+      <Descriptions.Item label="Ngày sinh">
+        {formatDate(employee.date_of_birth)}
+      </Descriptions.Item>
+      <Descriptions.Item label="Địa chỉ" span={2}>
+        {employee.address || '—'}
+      </Descriptions.Item>
+    </Descriptions>
+  )
+}
