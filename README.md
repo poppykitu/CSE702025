@@ -1,4 +1,4 @@
-# Module Quản lý Hồ sơ Nhân viên - Zoho Clone
+# Module Quản lý Hồ sơ Nhân viên
 
 ## Giới thiệu Tổng quan
 
