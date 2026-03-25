@@ -3,8 +3,8 @@ import { VIEW_MODE } from '@/utils/constants'
 
 export default function ViewToggle({ mode, onChange }) {
   const buttons = [
-    { value: VIEW_MODE.GRID, icon: <AppstoreOutlined />, label: 'Grid' },
-    { value: VIEW_MODE.LIST, icon: <BarsOutlined />, label: 'List' },
+    { value: VIEW_MODE.GRID, icon: <AppstoreOutlined />, label: 'Lưới' },
+    { value: VIEW_MODE.LIST, icon: <BarsOutlined />, label: 'Danh sách' },
   ]
 
   return (

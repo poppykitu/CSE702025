@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient'
 import { MOCK_EMPLOYEES } from '@/utils/mockData'
-import { normalizeSearch } from '@/utils/helpers'
+import { normalizeSearch, formatDate } from '@/utils/helpers'
+import { logAuditEvent, AUDIT_ACTIONS } from '@/services/auditService'
 
 /**
  * Lấy danh sách nhân viên với filter và search
@@ -14,7 +15,7 @@ export async function getEmployees({ search = '', departmentIds = [], status = '
     .from('profiles')
     .select(`
       *,
-      departments (id, name, code),
+      departments!department_id (id, name, code),
       designations (id, title, level)
     `)
     .order('full_name', { ascending: true })
@@ -54,7 +55,7 @@ export async function getEmployeeById(id) {
     .from('profiles')
     .select(`
       *,
-      departments (id, name, code, description),
+      departments!department_id (id, name, code, description),
       designations (id, title, level),
       manager:manager_id (id, full_name, avatar_url, employee_id)
     `)
@@ -100,6 +101,15 @@ export async function updateEmployee(id, employeeData) {
     .single()
 
   if (error) throw new Error(error.message)
+
+  // Log audit event
+  logAuditEvent({
+    tableName: 'profiles',
+    recordId: id,
+    action: AUDIT_ACTIONS.UPDATE_PROFILE,
+    newData: data
+  })
+
   return data
 }
 
@@ -119,6 +129,15 @@ export async function terminateEmployee(id, terminationDate) {
     .single()
 
   if (error) throw new Error(error.message)
+
+  // Log audit event
+  logAuditEvent({
+    tableName: 'profiles',
+    recordId: id,
+    action: 'TERMINATE',
+    newData: { status: 'terminated', date: terminationDate }
+  })
+
   return data
 }
 

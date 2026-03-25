@@ -2,25 +2,28 @@ import { useState, useDeferredValue } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Typography } from 'antd'
 import { UserAddOutlined, TeamOutlined } from '@ant-design/icons'
-import { useEmployees } from '@/hooks/useEmployees'
+import { useEmployees } from '@/features/employees/hooks/useEmployees'
 import FilterPanel from '@/components/filter/FilterPanel'
 import SearchBar from '@/components/filter/SearchBar'
-import EmployeeCard from '@/components/employee/EmployeeCard'
-import EmployeeListItem from '@/components/employee/EmployeeListItem'
+import EmployeeCard from '@/features/employees/components/EmployeeCard'
+import EmployeeListItem from '@/features/employees/components/EmployeeListItem'
 import ViewToggle from '@/components/common/ViewToggle'
 import EmptyState from '@/components/common/EmptyState'
 import LoadingState from '@/components/common/LoadingState'
 import { DEFAULT_FILTERS, VIEW_MODE } from '@/utils/constants'
+import { usePermission } from '@/features/auth/hooks/usePermission'
+import { PERMISSIONS } from '@/constants/roles'
 
 const { Title } = Typography
 
 export default function EmployeeDirectory() {
+  const { hasPermission } = usePermission()
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [viewMode, setViewMode] = useState(VIEW_MODE.GRID)
 
   // Debounce search để tránh quá nhiều request
   const deferredFilters = useDeferredValue(filters)
-  const { data: employees = [], isLoading, isError } = useEmployees(deferredFilters)
+  const { data: employees = [], isLoading, isError, error } = useEmployees(deferredFilters)
 
   const handleFilterChange = (newFilters) => setFilters(newFilters)
   const handleSearch = (value) => setFilters(prev => ({ ...prev, search: value }))
@@ -62,8 +65,10 @@ export default function EmployeeDirectory() {
             </div>
             <div>
               <Title level={5} style={{
-                margin: 0, fontSize: 15, fontWeight: 700,
+                margin: 0, fontSize: 16, fontWeight: 700,
+                fontFamily: 'var(--font-title)',
                 color: 'var(--color-text-primary)', lineHeight: 1.2,
+                letterSpacing: '-0.2px',
               }}>
                 Danh sách nhân viên
               </Title>
@@ -84,12 +89,14 @@ export default function EmployeeDirectory() {
           {/* View toggle */}
           <ViewToggle mode={viewMode} onChange={setViewMode} />
 
-          {/* Add button */}
-          <Link to="/employees/new">
-            <Button type="primary" icon={<UserAddOutlined />} style={{ height: 36 }}>
-              Thêm nhân viên
-            </Button>
-          </Link>
+          {/* Add button - chỉ hiển thị khi có quyền */}
+          {hasPermission(PERMISSIONS.CREATE_EMPLOYEE) && (
+            <Link to="/employees/new">
+              <Button type="primary" icon={<UserAddOutlined />} style={{ height: 36 }}>
+                Thêm nhân viên
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Employee Grid/List */}
@@ -103,7 +110,7 @@ export default function EmployeeDirectory() {
           {isError ? (
             <EmptyState
               title="Đã xảy ra lỗi"
-              description="Không thể tải danh sách nhân viên. Vui lòng thử lại."
+              description={error?.message || "Không thể tải danh sách nhân viên. Vui lòng thử lại."}
             />
           ) : isLoading ? (
             <LoadingState mode={viewMode} />

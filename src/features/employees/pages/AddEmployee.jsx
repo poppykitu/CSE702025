@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { message } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Button } from 'antd'
-import EmployeeForm from '@/components/form/EmployeeForm'
-import { useCreateEmployee } from '@/hooks/useEmployees'
+import EmployeeForm from '@/features/employees/components/EmployeeForm'
+import { useCreateEmployee } from '@/features/employees/hooks/useEmployees'
 
 export default function AddEmployee() {
   const navigate = useNavigate()
@@ -28,6 +28,10 @@ export default function AddEmployee() {
         background: 'var(--color-surface)',
         borderBottom: '1px solid var(--color-border)',
         display: 'flex', alignItems: 'center', gap: 8,
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
       }}>
         <Link to="/employees">
           <Button type="text" icon={<ArrowLeftOutlined />} size="small" style={{ color: 'var(--color-text-secondary)' }}>
@@ -52,7 +56,7 @@ export default function AddEmployee() {
           }}
         >
           <div style={{ marginBottom: 24 }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, fontFamily: 'var(--font-title)', color: 'var(--color-text-primary)', letterSpacing: '-0.3px' }}>
               Thêm nhân viên mới
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-muted)' }}>

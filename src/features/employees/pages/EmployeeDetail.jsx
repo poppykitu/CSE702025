@@ -6,14 +6,17 @@ import {
   CalendarOutlined, TeamOutlined, UserOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons'
-import { useEmployee } from '@/hooks/useEmployees'
-import { useTerminateEmployee } from '@/hooks/useEmployees'
-import EmployeeAvatar from '@/components/employee/EmployeeAvatar'
-import StatusBadge from '@/components/employee/StatusBadge'
+import { useEmployee } from '@/features/employees/hooks/useEmployees'
+import { useTerminateEmployee } from '@/features/employees/hooks/useEmployees'
+import EmployeeAvatar from '@/features/employees/components/EmployeeAvatar'
+import StatusBadge from '@/features/employees/components/StatusBadge'
 import {
   formatDate, calculateTenure, getAvatarColor,
 } from '@/utils/helpers'
 import { GENDER_LABELS, WORK_TYPE_LABELS, EMPLOYEE_STATUS } from '@/utils/constants'
+import { usePermission } from '@/features/auth/hooks/usePermission'
+import { PERMISSIONS } from '@/constants/roles'
+import DocumentsTab from '../components/DocumentsTab'
 import dayjs from 'dayjs'
 
 export default function EmployeeDetail() {
@@ -21,6 +24,9 @@ export default function EmployeeDetail() {
   const navigate = useNavigate()
   const { data: employee, isLoading, isError } = useEmployee(id)
   const terminateMutation = useTerminateEmployee()
+  const { hasPermission } = usePermission()
+  const canEdit = hasPermission(PERMISSIONS.EDIT_ANY_EMPLOYEE)
+  const canTerminate = hasPermission(PERMISSIONS.TERMINATE_EMPLOYEE)
 
   if (isLoading) {
     return (
@@ -73,6 +79,11 @@ export default function EmployeeDetail() {
       label: 'Thông tin cá nhân',
       children: <PersonalTab employee={employee} />,
     },
+    {
+      key: 'documents',
+      label: 'Tài liệu',
+      children: <DocumentsTab employeeId={id} />,
+    },
   ]
 
   return (
@@ -85,6 +96,10 @@ export default function EmployeeDetail() {
         display: 'flex',
         alignItems: 'center',
         gap: 8,
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
       }}>
         <Link to="/employees">
           <Button
@@ -116,30 +131,30 @@ export default function EmployeeDetail() {
         >
           {/* Banner */}
           <div style={{
-            height: 120,
+            height: 160,
             background: `linear-gradient(135deg, ${headerColor}20 0%, ${headerColor}08 50%, #F1F5F9 100%)`,
             borderBottom: `1px solid ${headerColor}15`,
             position: 'relative',
           }}>
-            {/* Actions top-right */}
+            {/* Actions top-right - chỉ hiển thị khi có quyền */}
             <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }}>
-              {!isTerminated && (
-                <>
-                  <Link to={`/employees/${id}/edit`}>
-                    <Button icon={<EditOutlined />} size="small" style={{ background: 'rgba(255,255,255,0.9)' }}>
-                      Chỉnh sửa
-                    </Button>
-                  </Link>
-                  <Button
-                    size="small"
-                    danger
-                    onClick={handleTerminate}
-                    loading={terminateMutation.isPending}
-                    style={{ background: 'rgba(255,255,255,0.9)' }}
-                  >
-                    Cho nghỉ việc
+              {!isTerminated && canEdit && (
+                <Link to={`/employees/${id}/edit`}>
+                  <Button icon={<EditOutlined />} size="small" style={{ background: 'rgba(255,255,255,0.9)' }}>
+                    Chỉnh sửa
                   </Button>
-                </>
+                </Link>
+              )}
+              {!isTerminated && canTerminate && (
+                <Button
+                  size="small"
+                  danger
+                  onClick={handleTerminate}
+                  loading={terminateMutation.isPending}
+                  style={{ background: 'rgba(255,255,255,0.9)' }}
+                >
+                  Cho nghỉ việc
+                </Button>
               )}
             </div>
           </div>
@@ -148,9 +163,9 @@ export default function EmployeeDetail() {
           <div style={{
             padding: '0 28px 24px',
             display: 'flex',
-            gap: 20,
+            gap: 24,
             alignItems: 'flex-end',
-            marginTop: -36,
+            marginTop: -16,
           }}>
             {/* Avatar */}
             <div style={{
@@ -158,6 +173,7 @@ export default function EmployeeDetail() {
               background: 'var(--color-surface)',
               borderRadius: '50%',
               boxShadow: '0 0 0 3px var(--color-border)',
+              backdropFilter: 'blur(10px)',
               flexShrink: 0,
             }}>
               <EmployeeAvatar
@@ -171,9 +187,10 @@ export default function EmployeeDetail() {
             <div style={{ paddingBottom: 4, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
                 <h1 style={{
-                  margin: 0, fontSize: 22, fontWeight: 800,
+                  margin: 0, fontSize: 26, fontWeight: 800,
+                  fontFamily: 'var(--font-title)',
                   color: 'var(--color-text-primary)', lineHeight: 1.2,
-                  letterSpacing: '-0.4px',
+                  letterSpacing: '-0.6px',
                 }}>
                   {employee.full_name}
                 </h1>

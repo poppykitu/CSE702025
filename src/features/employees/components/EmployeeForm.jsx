@@ -6,8 +6,8 @@ import {
 import { UploadOutlined, LoadingOutlined, UserOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useDepartments, useDesignations } from '@/hooks/useDepartments'
-import EmployeeAvatar from '@/components/employee/EmployeeAvatar'
-import { uploadAvatar } from '@/services/employeeService'
+import EmployeeAvatar from './EmployeeAvatar'
+import { uploadAvatar } from '../services/employeeService'
 import {
   EMPLOYEE_STATUS, EMPLOYEE_STATUS_LABELS,
   WORK_TYPE, WORK_TYPE_LABELS,

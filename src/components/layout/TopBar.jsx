@@ -1,22 +1,22 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Avatar, Dropdown, Badge } from 'antd'
+import { Avatar, Dropdown, Badge, Select } from 'antd'
 import {
   TeamOutlined,
   BellOutlined,
   SettingOutlined,
   LogoutOutlined,
   UserOutlined,
+  SwapOutlined,
 } from '@ant-design/icons'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/context/AuthContext'
 import { isSupabaseConfigured } from '@/lib/supabaseClient'
+import { ROLE_LABELS, ROLE_COLORS, ROLES } from '@/constants/roles'
 
 export default function TopBar() {
-  const { user, signOut } = useAuth()
+  const { user, profile, role, signOut, switchMockRole } = useAuth()
   const location = useLocation()
 
-  const navItems = [
-    { path: '/employees', label: 'Nhân viên', icon: <TeamOutlined /> },
-  ]
+  const roleColor = ROLE_COLORS[role] || ROLE_COLORS.employee
 
   const userMenuItems = [
     { key: 'profile', label: 'Hồ sơ của tôi', icon: <UserOutlined /> },
@@ -41,7 +41,7 @@ export default function TopBar() {
     }}>
       {/* Logo */}
       <Link
-        to="/employees"
+        to="/"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -73,49 +73,39 @@ export default function TopBar() {
         </span>
       </Link>
 
-      {/* Nav */}
-      <nav style={{ display: 'flex', gap: 4, flex: 1 }}>
-        {navItems.map(item => {
-          const isActive = location.pathname.startsWith(item.path)
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '6px 12px',
-                borderRadius: 6,
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: isActive ? 600 : 400,
-                color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-                background: isActive ? 'var(--color-primary-bg)' : 'transparent',
-                transition: 'all var(--transition-fast)',
-              }}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          )
-        })}
-      </nav>
+      {/* Spacer */}
+      <div style={{ flex: 1 }} />
 
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Demo mode: Role switcher */}
         {!isSupabaseConfigured && (
-          <div style={{
-            fontSize: 11,
-            padding: '3px 8px',
-            background: '#FFFBEB',
-            color: '#D97706',
-            border: '1px solid #FDE68A',
-            borderRadius: 4,
-            fontWeight: 500,
-            letterSpacing: '0.3px',
-          }}>
-            DEMO MODE
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              fontSize: 11,
+              padding: '3px 8px',
+              background: '#FFFBEB',
+              color: '#D97706',
+              border: '1px solid #FDE68A',
+              borderRadius: 4,
+              fontWeight: 500,
+              letterSpacing: '0.3px',
+            }}>
+              DEMO
+            </div>
+            <Select
+              size="small"
+              value={role}
+              onChange={(val) => switchMockRole(val)}
+              style={{ width: 140, fontSize: 12 }}
+              options={[
+                { value: ROLES.ADMIN, label: ROLE_LABELS[ROLES.ADMIN] },
+                { value: ROLES.HR, label: ROLE_LABELS[ROLES.HR] },
+                { value: ROLES.MANAGER, label: ROLE_LABELS[ROLES.MANAGER] },
+                { value: ROLES.EMPLOYEE, label: ROLE_LABELS[ROLES.EMPLOYEE] },
+              ]}
+              suffixIcon={<SwapOutlined />}
+            />
           </div>
         )}
 
@@ -149,15 +139,25 @@ export default function TopBar() {
           }}>
             <Avatar
               size={32}
-              style={{ background: 'var(--color-primary)', fontSize: 13, fontWeight: 600 }}
+              style={{
+                background: roleColor.color,
+                fontSize: 13,
+                fontWeight: 600,
+              }}
             >
-              HR
+              {(profile?.full_name || 'U').charAt(0).toUpperCase()}
             </Avatar>
             <div style={{ lineHeight: 1.3 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                {user?.email?.split('@')[0] || 'Admin'}
+                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>HR Manager</div>
+              <div style={{
+                fontSize: 11,
+                color: roleColor.color,
+                fontWeight: 500,
+              }}>
+                {ROLE_LABELS[role] || 'Nhân viên'}
+              </div>
             </div>
           </div>
         </Dropdown>

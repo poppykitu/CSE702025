@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agents & Temp
+.agents/
+.agent/
+_agents/
+_agent/
+tmp/
+.gemini/

@@ -80,7 +80,7 @@ export default function FilterPanel({ filters, onChange }) {
             onClick={handleReset}
             style={{ fontSize: 12, color: 'var(--color-text-muted)', height: 26 }}
           >
-            Reset
+            Đặt lại
           </Button>
         )}
       </div>

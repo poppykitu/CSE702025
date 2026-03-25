@@ -74,6 +74,7 @@ export default function EmployeeCard({ employee }) {
             background: 'var(--color-surface)',
             borderRadius: '50%',
             boxShadow: '0 0 0 2px var(--color-border)',
+            backdropFilter: 'blur(10px)',
           }}>
             <EmployeeAvatar name={full_name} avatarUrl={avatar_url} size={52} />
           </div>

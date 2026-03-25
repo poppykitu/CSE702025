@@ -4,8 +4,9 @@
    CSS Custom Properties / Design Tokens
    ================================ */
 :root {
-  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'DM Mono', 'Consolas', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-title: 'Plus Jakarta Sans', var(--font-sans);
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
 
   /* Brand Colors */
   --color-primary: #2563EB;
@@ -87,8 +88,9 @@ body {
 .ant-btn-primary {
   background-color: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
-  font-family: var(--font-sans) !important;
-  font-weight: 500 !important;
+  font-family: var(--font-title) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.2px;
   border-radius: var(--radius-sm) !important;
   height: 36px !important;
   box-shadow: none !important;
@@ -101,7 +103,8 @@ body {
 }
 
 .ant-btn {
-  font-family: var(--font-sans) !important;
+  font-family: var(--font-title) !important;
+  font-weight: 500 !important;
   border-radius: var(--radius-sm) !important;
   height: 36px !important;
   box-shadow: none !important;
@@ -126,9 +129,10 @@ body {
 
 .ant-form-item-label > label {
   font-family: var(--font-sans) !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   color: var(--color-text-secondary) !important;
   font-size: 13px !important;
+  letter-spacing: -0.1px;
 }
 
 .ant-checkbox-checked .ant-checkbox-inner {

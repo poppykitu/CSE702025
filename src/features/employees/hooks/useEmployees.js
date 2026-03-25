@@ -5,7 +5,7 @@ import {
   createEmployee,
   updateEmployee,
   terminateEmployee,
-} from '@/services/employeeService'
+} from '@/features/employees/services/employeeService'
 
 // Query keys
 export const EMPLOYEE_KEYS = {
