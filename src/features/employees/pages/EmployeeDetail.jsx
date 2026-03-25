@@ -273,77 +273,60 @@ function QuickStat({ icon, label, value }) {
 }
 
 function EmploymentTab({ employee }) {
-  const itemStyle = { display: 'flex', alignItems: 'center', minHeight: 24 }
+  const sharedProps = {
+    column: 2,
+    size: "small",
+    style: { padding: '8px 0 16px' },
+    labelStyle: { display: 'flex', alignItems: 'center', height: '32px' },
+    contentStyle: { display: 'flex', alignItems: 'center', height: '32px' }
+  }
 
   return (
-    <Descriptions 
-      column={2} 
-      size="small" 
-      style={{ padding: '8px 0 16px' }}
-      contentStyle={{ verticalAlign: 'middle' }}
-    >
+    <Descriptions {...sharedProps}>
       <Descriptions.Item label="Mã nhân viên">
-        <div style={itemStyle}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{employee.employee_id}</span>
-        </div>
+        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{employee.employee_id}</span>
       </Descriptions.Item>
       <Descriptions.Item label="Phòng ban">
-        <div style={itemStyle}>
-          {employee.departments?.name || '—'}
-        </div>
+        {employee.departments?.name || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Chức danh">
-        <div style={itemStyle}>
-          {employee.designations?.title || '—'}
-        </div>
+        {employee.designations?.title || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Quản lý trực tiếp">
-        <div style={itemStyle}>
-          {employee.manager ? employee.manager.full_name : '—'}
-        </div>
+        {employee.manager ? employee.manager.full_name : '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Loại hợp đồng">
-        <div style={itemStyle}>
-          {WORK_TYPE_LABELS[employee.work_type] || '—'}
-        </div>
+        {WORK_TYPE_LABELS[employee.work_type] || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Bản mềm Hợp đồng">
-        <div style={itemStyle}>
-          {employee.contract_url ? (
-            <Button 
-              type="link" 
-              size="small" 
-              icon={<FilePdfOutlined />} 
-              onClick={() => window.open(employee.contract_url, '_blank')}
-              style={{ padding: 0, height: 'auto', display: 'flex', alignItems: 'center' }}
-            >
-              Tải xuống/Xem PDF
-            </Button>
-          ) : (
-            <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Chưa có bản mềm</span>
-          )}
-        </div>
+        {employee.contract_url ? (
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<FilePdfOutlined />} 
+            onClick={() => window.open(employee.contract_url, '_blank')}
+            style={{ padding: 0, height: '32px', display: 'flex', alignItems: 'center' }}
+          >
+            Tải xuống/Xem PDF
+          </Button>
+        ) : (
+          <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Chưa có bản mềm</span>
+        )}
       </Descriptions.Item>
       <Descriptions.Item label="Địa điểm làm việc">
-        <div style={itemStyle}>
-          {employee.work_location || '—'}
-        </div>
+        {employee.work_location || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Ngày vào làm">
-        <div style={itemStyle}>
-          {formatDate(employee.date_of_joining)}
-        </div>
+        {formatDate(employee.date_of_joining)}
       </Descriptions.Item>
       {employee.date_of_termination && (
         <Descriptions.Item label="Ngày nghỉ việc">
-          <div style={itemStyle}>
-            <span style={{ color: '#DC2626' }}>{formatDate(employee.date_of_termination)}</span>
-          </div>
+          <span style={{ color: '#DC2626' }}>{formatDate(employee.date_of_termination)}</span>
         </Descriptions.Item>
       )}
       {employee.bio && (
         <Descriptions.Item label="Giới thiệu" span={2}>
-          <div style={{ ...itemStyle, height: 'auto', alignItems: 'flex-start' }}>
+          <div style={{ height: 'auto', minHeight: '32px', display: 'flex', alignItems: 'flex-start', paddingTop: '6px' }}>
             <span style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>
               {employee.bio}
             </span>
@@ -355,39 +338,32 @@ function EmploymentTab({ employee }) {
 }
 
 function PersonalTab({ employee }) {
-  const itemStyle = { display: 'flex', alignItems: 'center', minHeight: 24 }
+  const sharedProps = {
+    column: 2,
+    size: "small",
+    style: { padding: '8px 0 16px' },
+    labelStyle: { display: 'flex', alignItems: 'center', height: '32px' },
+    contentStyle: { display: 'flex', alignItems: 'center', height: '32px' }
+  }
 
   return (
-    <Descriptions 
-      column={2} 
-      size="small" 
-      style={{ padding: '8px 0 16px' }}
-      contentStyle={{ verticalAlign: 'middle' }}
-    >
+    <Descriptions {...sharedProps}>
       <Descriptions.Item label="Email">
-        <div style={itemStyle}>
-          <a href={`mailto:${employee.email}`} style={{ color: 'var(--color-primary)' }}>
-            {employee.email}
-          </a>
-        </div>
+        <a href={`mailto:${employee.email}`} style={{ color: 'var(--color-primary)' }}>
+          {employee.email}
+        </a>
       </Descriptions.Item>
       <Descriptions.Item label="Điện thoại">
-        <div style={itemStyle}>
-          {employee.phone || '—'}
-        </div>
+        {employee.phone || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Giới tính">
-        <div style={itemStyle}>
-          {GENDER_LABELS[employee.gender] || '—'}
-        </div>
+        {GENDER_LABELS[employee.gender] || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Ngày sinh">
-        <div style={itemStyle}>
-          {formatDate(employee.date_of_birth)}
-        </div>
+        {formatDate(employee.date_of_birth)}
       </Descriptions.Item>
       <Descriptions.Item label="Địa chỉ" span={2}>
-        <div style={{ ...itemStyle, height: 'auto' }}>
+        <div style={{ height: 'auto', minHeight: '32px', display: 'flex', alignItems: 'center' }}>
           {employee.address || '—'}
         </div>
       </Descriptions.Item>
