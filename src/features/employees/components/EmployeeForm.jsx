@@ -3,7 +3,7 @@ import {
   Form, Input, Select, DatePicker, Radio, Upload,
   Button, Row, Col, Divider, message,
 } from 'antd'
-import { UploadOutlined, LoadingOutlined, UserOutlined } from '@ant-design/icons'
+import { UploadOutlined, LoadingOutlined, UserOutlined, FilePdfOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useDepartments, useDesignations } from '@/hooks/useDepartments'
 import EmployeeAvatar from './EmployeeAvatar'
@@ -30,6 +30,8 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
   const [selectedDeptId, setSelectedDeptId] = useState(initialValues.department_id || null)
   const [avatarUrl, setAvatarUrl] = useState(initialValues.avatar_url || null)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [contractUrl, setContractUrl] = useState(initialValues.contract_url || null)
+  const [contractUploading, setContractUploading] = useState(false)
 
   const { data: departments = [] } = useDepartments()
   const { data: designations = [] } = useDesignations(selectedDeptId)
@@ -44,6 +46,7 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
         date_of_termination: initialValues.date_of_termination ? dayjs(initialValues.date_of_termination) : null,
       })
       setAvatarUrl(initialValues.avatar_url || null)
+      setContractUrl(initialValues.contract_url || null)
       setSelectedDeptId(initialValues.department_id || null)
     }
   }, [initialValues, form])
@@ -68,10 +71,27 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
     }
   }
 
+  const handleContractUpload = async ({ file }) => {
+    setContractUploading(true)
+    try {
+      const empId = form.getFieldValue('employee_id') || 'temp'
+      // Sẽ cập nhật uploadContract trong service sau
+      const url = await uploadAvatar(file, `contract-${empId}`) 
+      setContractUrl(url)
+      form.setFieldValue('contract_url', url)
+      message.success('Tải hợp đồng lên thành công!')
+    } catch (err) {
+      message.error('Tải hợp đồng thất bại: ' + err.message)
+    } finally {
+      setContractUploading(false)
+    }
+  }
+
   const handleFinish = async (values) => {
     const payload = {
       ...values,
       avatar_url: avatarUrl,
+      contract_url: contractUrl,
       date_of_birth: values.date_of_birth ? values.date_of_birth.format('YYYY-MM-DD') : null,
       date_of_joining: values.date_of_joining ? values.date_of_joining.format('YYYY-MM-DD') : null,
       date_of_termination: values.date_of_termination ? values.date_of_termination.format('YYYY-MM-DD') : null,
@@ -199,6 +219,31 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
           <Col xs={24} md={12}>
             <Form.Item name="date_of_joining" label="Ngày vào làm">
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item name="contract_url" label="Bản mềm Hợp đồng (PDF)">
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Upload
+                  showUploadList={false}
+                  accept=".pdf"
+                  customRequest={handleContractUpload}
+                >
+                  <Button icon={contractUploading ? <LoadingOutlined /> : <UploadOutlined />} size="small">
+                    Tải lên PDF
+                  </Button>
+                </Upload>
+                {contractUrl && (
+                  <Button 
+                    type="link" 
+                    icon={<FilePdfOutlined />} 
+                    size="small" 
+                    onClick={() => window.open(contractUrl, '_blank')}
+                  >
+                    Xem bản hiện tại
+                  </Button>
+                )}
+              </div>
             </Form.Item>
           </Col>
           <Col span={24}>
