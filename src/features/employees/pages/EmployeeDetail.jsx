@@ -290,6 +290,21 @@ function EmploymentTab({ employee }) {
       <Descriptions.Item label="Loại hợp đồng">
         {WORK_TYPE_LABELS[employee.work_type] || '—'}
       </Descriptions.Item>
+      <Descriptions.Item label="Bản mềm Hợp đồng">
+        {employee.contract_url ? (
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<FilePdfOutlined />} 
+            onClick={() => window.open(employee.contract_url, '_blank')}
+            style={{ padding: 0, height: 'auto' }}
+          >
+            Tải xuống/Xem PDF
+          </Button>
+        ) : (
+          <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Chưa có bản mềm</span>
+        )}
+      </Descriptions.Item>
       <Descriptions.Item label="Địa điểm làm việc">
         {employee.work_location || '—'}
       </Descriptions.Item>
