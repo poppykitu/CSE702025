@@ -1,59 +1,72 @@
 # PeopleHub HRM - Hệ thống Quản trị Nguồn nhân lực Chuyên nghiệp
 
-Hệ thống PeopleHub HRM là một giải pháp quản trị nhân sự (HRM) cấp doanh nghiệp, được xây dựng dựa trên các tiêu chuẩn chuyên nghiệp của Zoho People. Ứng dụng tập trung vào tính bảo mật, quy trình phê duyệt chặt chẽ và trải nghiệm người dùng tối ưu.
+Hệ thống PeopleHub HRM là một giải pháp quản trị nhân sự (HRM) cấp doanh nghiệp, được thiết kế và xây dựng dựa trên các tiêu chuẩn chuyên nghiệp của Zoho People. Ứng dụng tập trung vào tính bảo mật, quy trình phê duyệt chặt chẽ, và kiến trúc hướng tính năng (Feature-based Architecture) để đảm bảo khả năng mở rộng tối đa.
 
-## Các Tính năng Cốt lõi
+## 1. Hệ thống Phân quyền (RBAC Structure)
+Hệ thống được xây dựng trên 4 cấp độ ủy quyền nghiêm ngặt, đảm bảo tính toàn vẹn và bảo mật dữ liệu:
 
-### 1. Quản lý Hồ sơ Nhân sự (Employee Profile Management)
-- Directory nhân viên với bộ lọc đa tiêu chí (Phòng ban, Chức danh, Trạng thái).
-- Quản lý vòng đời nhân viên từ khi vào làm (Onboarding) đến khi nghỉ việc (Terminated).
-- Lưu trữ hồ sơ tài liệu bảo mật gồm Hợp đồng lao động, Bảo hiểm và Giấy tờ định danh.
+- **Quản trị viên hệ thống (Admin)**: Toàn quyền kiểm soát cấu hình hệ thống, quản lý tài khoản người dùng và truy cập toàn bộ nhật ký Audit Logs để giám sát hoạt động.
+- **Quản lý nhân sự (HR)**: Quản lý hồ sơ nhân viên toàn diện (Hợp đồng, bảo hiểm, lương bổng), phê duyệt các yêu cầu trên toàn công ty và quản lý tài liệu lưu trữ.
+- **Quản lý bộ phận (Manager)**: Xem hồ sơ cơ bản của nhân viên trực thuộc và phê duyệt các đơn từ (nghỉ phép, tăng ca) trong phạm vi phòng ban được phân bổ.
+- **Nhân viên (Employee)**: Tự tra cứu thông tin cá nhân, nộp đơn nghỉ phép, xem bảng công và bảng lương cá nhân thông qua cơ chế tự phục vụ (Self-service).
 
-### 2. Quản lý Nghỉ phép (Leave Management)
-- Hệ thống nộp đơn nghỉ phép tự phục vụ cho nhân viên.
-- Quy trình phê duyệt đa cấp (Manager/HR/Admin).
-- Tích hợp phản hồi/ghi chú khi phê duyệt hoặc từ chối đơn.
+## 2. Các Phân hệ Chức năng Chính
 
-### 3. Chấm công & Bảng lương (Attendance & Payroll)
-- Tra cứu bảng công cá nhân theo thời gian thực (Giờ vào/ra, trạng thái đi muộn).
-- Theo dõi phiếu lương hàng tháng với chi tiết lương cơ bản, phụ cấp và các khoản khấu trừ.
+### 2.1 Quản lý Hồ sơ & Vòng đời Nhân sự
+- **Employee Directory**: Danh sách nhân viên với bộ lọc nâng cao theo Phòng ban, Chức danh và Trạng thái.
+- **Quản lý Vòng đời**: Hệ thống hóa trạng thái nhân viên từ lúc **Onboarding** (Đang tiếp nhận), **Active** (Đang làm việc) cho đến khi **Terminated** (Đã nghỉ việc).
+- **Hồ sơ Tài liệu (Compliance)**: Lưu trữ bảo mật các tệp tin Hợp đồng lao động, Bảo hiểm và Giấy tờ định danh thông qua Supabase Storage với link truy cập có thời hạn.
 
-### 4. Hệ thống Phân quyền (RBAC) & Bảo mật
-- Phân quyền dựa trên 4 vai trò chính: Admin, HR, Manager, và Employee.
-- Cơ chế Row Level Security (RLS) của Supabase đảm bảo dữ liệu chỉ được truy cập bởi đúng đối tượng có thẩm quyền.
+### 2.2 Quản lý Nghỉ phép (Approval Workflow)
+- Luồng phê duyệt thông minh: Nhân viên nộp đơn -> Quản lý trực tiếp xem xét -> HR/Admin xác nhận cuối cùng.
+- Tích hợp tính năng phản hồi/lý do trực tiếp khi phê duyệt hoặc từ chối đơn để đảm bảo tính minh bạch.
 
-### 5. Nhật ký Hệ thống (Audit Logging)
-- Tự động ghi lại toàn bộ các hành động nhạy cảm (Đăng nhập, cập nhật hồ sơ, phê duyệt đơn).
-- Báo cáo nhật ký minh bạch phục vụ công tác kiểm tra và quản trị.
+### 2.3 Chấm công & Lương bổng (Self-Service)
+- **Bảng công**: Hệ thống ghi nhận giờ vào/ra, tính toán trạng thái đi muộn hoặc về sớm theo thời gian thực.
+- **Bảng lương**: Phiếu lương chi tiết hàng tháng gồm lương cơ bản, phụ cấp, các khoản khấu trừ và thuế.
 
-## Danh mục Công nghệ
+### 2.4 Nhật ký hệ thống (Audit Logging)
+- Tự động ghi vết mọi thao tác nhạy cảm liên quan đến thay đổi dữ liệu nhân sự, tài chính và truy cập hệ thống.
 
-- **Frontend**: React.js (Vite), JavaScript, Framer Motion (Page Transitions).
-- **Styling**: Tailwind CSS, Ant Design (Components).
-- **Backend/Database**: Supabase (PostgreSQL, Auth, Storage, Edge Functions).
-- **State Management**: TanStack Query (React Query).
+## 3. Cấu trúc Cơ sở dữ liệu (Database Schema)
+Hệ thống sử dụng PostgreSQL trên nền tảng Supabase với các bảng chính:
+- `profiles`: Lưu trữ thông tin định danh và vai trò người dùng.
+- `employees`: Thông tin chi tiết hồ sơ nhân sự và trạng thái làm việc.
+- `departments` & `designations`: Quản lý cơ cấu tổ chức.
+- `leave_requests`: Lưu trữ đơn từ và trạng thái phê duyệt.
+- `attendance_records` & `payslips`: Dữ liệu công và lương.
+- `audit_logs`: Nhật ký hoạt động hệ thống.
 
-## Hướng dẫn Cài đặt
+## 4. Bảo mật và Công nghệ
 
-1. Kiểm tra môi trường Node.js.
-2. Clone mã nguồn và cài đặt dependencies:
+- **Row Level Security (RLS)**: Cơ chế bảo mật tầng thấp nhất tại Database, đảm bảo dữ liệu chỉ hiển thị đúng cho đối tượng có thẩm quyền.
+- **Tech Stack**:
+  - **Frontend**: React.js (Vite), Framer Motion.
+  - **UI Library**: Ant Design (Premium UI Components).
+  - **Backend**: Supabase (PostgreSQL, Auth, Storage).
+  - **State Management**: TanStack Query (React Query).
+
+## 5. Hướng dẫn Triển khai
+
+1. **Cài đặt môi trường**: Yêu cầu Node.js phiên bản mới nhất.
+2. **Cài đặt Dependencies**:
    ```bash
    npm install
    ```
-3. Cấu hình biến môi trường trong file `.env`:
+3. **Cấu hình Supabase**:
+   - Tạo các bảng theo schema cung cấp trong thư mục `supabase/`.
+   - Cấu hình RLS Policies cho các vai trò Admin, HR, Manager, Employee.
+   - Tạo Storage Bucket `employee_documents` ở chế độ Private.
+4. **Biến môi trường (.env)**:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
-4. Chạy ứng dụng ở chế độ phát triển:
+5. **Chạy ứng dụng**:
    ```bash
    npm run dev
    ```
 
-## Kiến trúc Mã nguồn
-
-Hệ thống được tổ chức theo cấu trúc tính năng (Feature-based Architecture) giúp dễ dàng mở rộng:
-- `src/features/auth`: Xác thực và phân quyền.
-- `src/features/employees`: Quản lý danh sách và hồ sơ nhân viên.
-- `src/features/leave-management`: Luồng phê duyệt nghỉ phép.
-- `src/features/attendance`: Module chấm công.
-- `src/features/payroll`: Module lương bổng.
-- `src/services`: Các dịch vụ dùng chung (Audit, Storage).
+## 6. Kiến trúc Thư mục (Architecture)
+Hệ thống tuân thủ cấu trúc hướng tính năng:
+- `src/features/[feature-name]`: Chứa UI components, hooks, services và logic riêng cho từng phân hệ.
+- `src/components/layout`: Chứa cấu trúc khung Dashboard, Sidebar (Bento Design) và Topbar.
+- `src/context`: Quản lý trạng thái xác thực và phân quyền toàn cục.
