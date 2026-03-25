@@ -4,7 +4,7 @@ import {
   EditOutlined, ArrowLeftOutlined,
   MailOutlined, PhoneOutlined, EnvironmentOutlined,
   CalendarOutlined, TeamOutlined, UserOutlined,
-  ExclamationCircleOutlined,
+  ExclamationCircleOutlined, FilePdfOutlined,
 } from '@ant-design/icons'
 import { useEmployee } from '@/features/employees/hooks/useEmployees'
 import { useTerminateEmployee } from '@/features/employees/hooks/useEmployees'
