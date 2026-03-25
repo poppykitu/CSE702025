@@ -273,25 +273,42 @@ function QuickStat({ icon, label, value }) {
 }
 
 function EmploymentTab({ employee }) {
+  const itemStyle = { display: 'flex', alignItems: 'center', minHeight: 24 }
+
   return (
-    <Descriptions column={2} size="small" style={{ padding: '8px 0 16px' }}>
+    <Descriptions 
+      column={2} 
+      size="small" 
+      style={{ padding: '8px 0 16px' }}
+      contentStyle={{ verticalAlign: 'middle' }}
+    >
       <Descriptions.Item label="Mã nhân viên">
-        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{employee.employee_id}</span>
+        <div style={itemStyle}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{employee.employee_id}</span>
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Phòng ban">
-        {employee.departments?.name || '—'}
+        <div style={itemStyle}>
+          {employee.departments?.name || '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Chức danh">
-        {employee.designations?.title || '—'}
+        <div style={itemStyle}>
+          {employee.designations?.title || '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Quản lý trực tiếp">
-        {employee.manager ? employee.manager.full_name : '—'}
+        <div style={itemStyle}>
+          {employee.manager ? employee.manager.full_name : '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Loại hợp đồng">
-        {WORK_TYPE_LABELS[employee.work_type] || '—'}
+        <div style={itemStyle}>
+          {WORK_TYPE_LABELS[employee.work_type] || '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Bản mềm Hợp đồng">
-        <div style={{ display: 'inline-flex', alignItems: 'center', minHeight: 22 }}>
+        <div style={itemStyle}>
           {employee.contract_url ? (
             <Button 
               type="link" 
@@ -308,21 +325,29 @@ function EmploymentTab({ employee }) {
         </div>
       </Descriptions.Item>
       <Descriptions.Item label="Địa điểm làm việc">
-        {employee.work_location || '—'}
+        <div style={itemStyle}>
+          {employee.work_location || '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Ngày vào làm">
-        {formatDate(employee.date_of_joining)}
+        <div style={itemStyle}>
+          {formatDate(employee.date_of_joining)}
+        </div>
       </Descriptions.Item>
       {employee.date_of_termination && (
         <Descriptions.Item label="Ngày nghỉ việc">
-          <span style={{ color: '#DC2626' }}>{formatDate(employee.date_of_termination)}</span>
+          <div style={itemStyle}>
+            <span style={{ color: '#DC2626' }}>{formatDate(employee.date_of_termination)}</span>
+          </div>
         </Descriptions.Item>
       )}
       {employee.bio && (
         <Descriptions.Item label="Giới thiệu" span={2}>
-          <span style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>
-            {employee.bio}
-          </span>
+          <div style={{ ...itemStyle, height: 'auto', alignItems: 'flex-start' }}>
+            <span style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>
+              {employee.bio}
+            </span>
+          </div>
         </Descriptions.Item>
       )}
     </Descriptions>
@@ -330,24 +355,41 @@ function EmploymentTab({ employee }) {
 }
 
 function PersonalTab({ employee }) {
+  const itemStyle = { display: 'flex', alignItems: 'center', minHeight: 24 }
+
   return (
-    <Descriptions column={2} size="small" style={{ padding: '8px 0 16px' }}>
+    <Descriptions 
+      column={2} 
+      size="small" 
+      style={{ padding: '8px 0 16px' }}
+      contentStyle={{ verticalAlign: 'middle' }}
+    >
       <Descriptions.Item label="Email">
-        <a href={`mailto:${employee.email}`} style={{ color: 'var(--color-primary)' }}>
-          {employee.email}
-        </a>
+        <div style={itemStyle}>
+          <a href={`mailto:${employee.email}`} style={{ color: 'var(--color-primary)' }}>
+            {employee.email}
+          </a>
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Điện thoại">
-        {employee.phone || '—'}
+        <div style={itemStyle}>
+          {employee.phone || '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Giới tính">
-        {GENDER_LABELS[employee.gender] || '—'}
+        <div style={itemStyle}>
+          {GENDER_LABELS[employee.gender] || '—'}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Ngày sinh">
-        {formatDate(employee.date_of_birth)}
+        <div style={itemStyle}>
+          {formatDate(employee.date_of_birth)}
+        </div>
       </Descriptions.Item>
       <Descriptions.Item label="Địa chỉ" span={2}>
-        {employee.address || '—'}
+        <div style={{ ...itemStyle, height: 'auto' }}>
+          {employee.address || '—'}
+        </div>
       </Descriptions.Item>
     </Descriptions>
   )
