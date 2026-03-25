@@ -164,6 +164,28 @@ export async function uploadAvatar(file, employeeId) {
 }
 
 /**
+ * Upload hợp đồng bản mềm (PDF) lên Supabase Storage
+ */
+export async function uploadContract(file, employeeId) {
+  if (!isSupabaseConfigured) {
+    return URL.createObjectURL(file)
+  }
+
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${employeeId}-contract-${Date.now()}.${fileExt}`
+  const filePath = `${employeeId}/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('employee_documents')
+    .upload(filePath, file, { upsert: true })
+
+  if (uploadError) throw new Error(uploadError.message)
+
+  const { data } = supabase.storage.from('employee_documents').getPublicUrl(filePath)
+  return data.publicUrl
+}
+
+/**
  * Lấy số lượng nhân viên theo từng phòng ban
  */
 export async function getEmployeeCountByDepartment() {

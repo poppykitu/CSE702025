@@ -7,7 +7,7 @@ import { UploadOutlined, LoadingOutlined, UserOutlined, FilePdfOutlined } from '
 import dayjs from 'dayjs'
 import { useDepartments, useDesignations } from '@/hooks/useDepartments'
 import EmployeeAvatar from './EmployeeAvatar'
-import { uploadAvatar } from '../services/employeeService'
+import { uploadAvatar, uploadContract } from '../services/employeeService'
 import {
   EMPLOYEE_STATUS, EMPLOYEE_STATUS_LABELS,
   WORK_TYPE, WORK_TYPE_LABELS,
@@ -75,8 +75,7 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
     setContractUploading(true)
     try {
       const empId = form.getFieldValue('employee_id') || 'temp'
-      // Sẽ cập nhật uploadContract trong service sau
-      const url = await uploadAvatar(file, `contract-${empId}`) 
+      const url = await uploadContract(file, empId) 
       setContractUrl(url)
       form.setFieldValue('contract_url', url)
       message.success('Tải hợp đồng lên thành công!')
