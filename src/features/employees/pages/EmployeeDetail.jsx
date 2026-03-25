@@ -291,7 +291,7 @@ function EmploymentTab({ employee }) {
         {WORK_TYPE_LABELS[employee.work_type] || '—'}
       </Descriptions.Item>
       <Descriptions.Item label="Bản mềm Hợp đồng">
-        <div style={{ display: 'flex', alignItems: 'center', minHeight: 22 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', minHeight: 22 }}>
           {employee.contract_url ? (
             <Button 
               type="link" 
