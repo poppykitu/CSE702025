@@ -16,6 +16,7 @@ import {
   updateDepartment,
   deleteDepartment,
 } from '@/services/departmentService'
+import { getEmployeeCountByDepartment } from '@/features/employees/services/employeeService'
 import { MOCK_EMPLOYEES } from '@/utils/mockData'
 
 export default function DepartmentManagementPage() {
@@ -32,18 +33,16 @@ export default function DepartmentManagementPage() {
   const fetchDepartments = async () => {
     setLoading(true)
     try {
-      const data = await getDepartments()
-      // Thêm số lượng nhân viên cho mỗi phòng ban
-      const enriched = data.map(dept => {
-        // Trong DEMO mode, đếm từ MOCK_EMPLOYEES
-        let count = 0
-        if (!isSupabaseConfigured) {
-          count = MOCK_EMPLOYEES.filter(
-            e => e.department_id === dept.id && e.status !== 'terminated'
-          ).length
-        }
-        return { ...dept, employee_count: count }
-      })
+      const [data, counts] = await Promise.all([
+        getDepartments(),
+        getEmployeeCountByDepartment()
+      ])
+      
+      const enriched = data.map(dept => ({
+        ...dept,
+        employee_count: counts[dept.id] || 0
+      }))
+      
       setDepartments(enriched)
     } catch (err) {
       message.error('Không thể tải danh sách phòng ban: ' + err.message)

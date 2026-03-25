@@ -146,19 +146,23 @@ export default function DashboardPage() {
              <span style={{ fontWeight: 800 }}>Cơ cấu phòng ban</span>
            </div>
            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-             {departments.slice(0, 3).map(dept => {
-               const count = employees.filter(e => e.department_id === dept.id).length
-               const percent = Math.round((count / employees.length) * 100)
-               return (
-                 <div key={dept.id}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 500 }}>{dept.name}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700 }}>{count} người</span>
-                    </div>
-                    <Progress percent={percent} status="active" strokeColor="var(--color-primary)" showInfo={false} />
-                 </div>
-               )
-             })}
+             {departments.length === 0 ? (
+               <div style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>Đang tải dữ liệu...</div>
+             ) : (
+               departments.slice(0, 3).map(dept => {
+                 const count = employees.filter(e => e.department_id === dept.id).length
+                 const percent = employees.length > 0 ? Math.round((count / employees.length) * 100) : 0
+                 return (
+                   <div key={dept.id}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500 }}>{dept.name}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>{count} người</span>
+                      </div>
+                      <Progress percent={percent} status="active" strokeColor="var(--color-primary)" showInfo={false} />
+                   </div>
+                 )
+               })
+             )}
            </div>
         </div>
 
