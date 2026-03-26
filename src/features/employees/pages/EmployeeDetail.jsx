@@ -18,6 +18,7 @@ import { usePermission } from '@/features/auth/hooks/usePermission'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { PERMISSIONS } from '@/constants/roles'
 import DocumentsTab from '../components/DocumentsTab'
+import AttendanceManageTab from '@/features/attendance/components/AttendanceManageTab'
 import dayjs from 'dayjs'
 
 export default function EmployeeDetail() {
@@ -86,6 +87,14 @@ export default function EmployeeDetail() {
       children: <DocumentsTab employeeId={id} />,
     },
   ]
+
+  if (canEdit) {
+    tabItems.push({
+      key: 'attendance',
+      label: 'Chấm công (Admin)',
+      children: <AttendanceManageTab employeeId={id} />,
+    })
+  }
 
   return (
     <div style={{ minHeight: 'calc(100vh - 56px)', background: 'var(--color-bg)' }}>
