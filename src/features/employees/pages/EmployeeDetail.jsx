@@ -15,6 +15,7 @@ import {
 } from '@/utils/helpers'
 import { GENDER_LABELS, WORK_TYPE_LABELS, EMPLOYEE_STATUS } from '@/utils/constants'
 import { usePermission } from '@/features/auth/hooks/usePermission'
+import { useAuth } from '@/features/auth/context/AuthContext'
 import { PERMISSIONS } from '@/constants/roles'
 import DocumentsTab from '../components/DocumentsTab'
 import dayjs from 'dayjs'
@@ -273,6 +274,7 @@ function QuickStat({ icon, label, value }) {
 }
 
 function EmploymentTab({ employee }) {
+  const { isAdmin, isHR } = useAuth()
   const sharedProps = {
     column: 2,
     size: "small",
@@ -298,6 +300,15 @@ function EmploymentTab({ employee }) {
       <Descriptions.Item label="Loại hợp đồng">
         {WORK_TYPE_LABELS[employee.work_type] || '—'}
       </Descriptions.Item>
+      {(isAdmin || isHR) && (
+        <Descriptions.Item label="Lương cơ bản">
+          <span style={{ fontWeight: 600, color: '#10B981' }}>
+            {employee.base_salary 
+              ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(employee.base_salary) 
+              : <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontWeight: 'normal' }}>Chưa thiết lập</span>}
+          </span>
+        </Descriptions.Item>
+      )}
       <Descriptions.Item label="Bản mềm Hợp đồng">
         {employee.contract_url ? (
           <Button 
