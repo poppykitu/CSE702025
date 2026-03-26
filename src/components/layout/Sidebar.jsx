@@ -61,14 +61,14 @@ const ALL_NAV_ITEMS = [
   {
     key: 'my-attendance',
     path: '/my-attendance',
-    label: 'Chấm công cá nhân',
+    label: 'Chấm công',
     icon: <HistoryOutlined />,
     roles: ['employee', 'manager', 'hr', 'admin'],
   },
   {
     key: 'my-payslips',
     path: '/my-payslips',
-    label: 'Bảng lương cá nhân',
+    label: 'Bảng lương',
     icon: <WalletOutlined />,
     roles: ['employee', 'manager', 'hr', 'admin'],
   },

@@ -88,19 +88,6 @@ export default function EmployeeDetail() {
     },
   ]
 
-  if (canEdit) {
-    tabItems.push({
-      key: 'attendance',
-      label: 'Chấm công (Admin)',
-      children: <AttendanceManageTab employeeId={id} />,
-    })
-    tabItems.push({
-      key: 'salary',
-      label: 'Lương (Admin)',
-      children: <SalaryTab employee={employee} />,
-    })
-  }
-
   return (
     <div style={{ minHeight: 'calc(100vh - 56px)', background: 'var(--color-bg)' }}>
       {/* Back nav */}
