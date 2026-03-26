@@ -74,7 +74,7 @@ const ALL_NAV_ITEMS = [
   },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed }) {
   const location = useLocation()
   const { role, hasPermission, canAccess } = usePermission()
   const { profile } = useAuth()
@@ -90,7 +90,7 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: 220,
+      width: collapsed ? 64 : 220,
       background: 'var(--color-surface)',
       borderRight: '1px solid var(--color-border)',
       display: 'flex',
@@ -98,40 +98,43 @@ export default function Sidebar() {
       height: '100%',
       flexShrink: 0,
       overflow: 'hidden',
+      transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     }}>
       {/* Role badge */}
-      <div style={{
-        padding: '16px 16px 12px',
-        borderBottom: '1px solid var(--color-border)',
-      }}>
+      {!collapsed && (
         <div style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: roleColor.color,
-          background: roleColor.bg,
-          border: `1px solid ${roleColor.border}`,
-          borderRadius: 6,
-          padding: '6px 10px',
-          textAlign: 'center',
-          letterSpacing: '0.3px',
-          textTransform: 'uppercase',
+          padding: '16px 16px 12px',
+          borderBottom: '1px solid var(--color-border)',
         }}>
-          {ROLE_LABELS[role] || 'Nhân viên'}
-        </div>
-        {profile?.full_name && (
           <div style={{
-            fontSize: 12,
-            color: 'var(--color-text-muted)',
-            marginTop: 8,
+            fontSize: 11,
+            fontWeight: 600,
+            color: roleColor.color,
+            background: roleColor.bg,
+            border: `1px solid ${roleColor.border}`,
+            borderRadius: 6,
+            padding: '6px 10px',
             textAlign: 'center',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            letterSpacing: '0.3px',
+            textTransform: 'uppercase',
           }}>
-            {profile.full_name}
+            {ROLE_LABELS[role] || 'Nhân viên'}
           </div>
-        )}
-      </div>
+          {profile?.full_name && (
+            <div style={{
+              fontSize: 12,
+              color: 'var(--color-text-muted)',
+              marginTop: 8,
+              textAlign: 'center',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {profile.full_name}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Navigation items */}
       <nav style={{
@@ -150,11 +153,13 @@ export default function Sidebar() {
             <Link
               key={item.key}
               to={item.path}
+              title={collapsed ? item.label : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                padding: '10px 12px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                gap: collapsed ? 0 : 10,
+                padding: collapsed ? '12px 0' : '10px 12px',
                 borderRadius: 8,
                 textDecoration: 'none',
                 fontSize: 13,
@@ -165,25 +170,27 @@ export default function Sidebar() {
                 letterSpacing: '-0.1px',
               }}
             >
-              <span style={{ fontSize: 16, lineHeight: 1, opacity: isActive ? 1 : 0.7 }}>
+              <span style={{ fontSize: 18, lineHeight: 1, opacity: isActive ? 1 : 0.7 }}>
                 {item.icon}
               </span>
-              {item.label}
+              {!collapsed && <span>{item.label}</span>}
             </Link>
           )
         })}
       </nav>
 
       {/* Footer */}
-      <div style={{
-        padding: '12px 16px',
-        borderTop: '1px solid var(--color-border)',
-        fontSize: 10,
-        color: 'var(--color-text-muted)',
-        textAlign: 'center',
-      }}>
-        PeopleHub v2.0 RBAC
-      </div>
+      {!collapsed && (
+        <div style={{
+          padding: '12px 16px',
+          borderTop: '1px solid var(--color-border)',
+          fontSize: 10,
+          color: 'var(--color-text-muted)',
+          textAlign: 'center',
+        }}>
+          PeopleHub v2.0 RBAC
+        </div>
+      )}
     </aside>
   )
 }

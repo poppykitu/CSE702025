@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Form, Input, Button, message, Tabs } from 'antd'
 import { MailOutlined, LockOutlined, TeamOutlined } from '@ant-design/icons'
 import { signInWithEmail, signUpWithEmail, isSupabaseConfigured } from '@/lib/supabaseClient'
+import GradientWaveBackground from '@/components/common/GradientWaveBackground'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -54,13 +55,13 @@ export default function LoginPage() {
       children: (
         <Form layout="vertical" onFinish={handleLogin} size="large" style={{ marginTop: 8 }}>
           <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
-            <Input prefix={<MailOutlined style={{ color: 'var(--color-text-muted)' }} />} placeholder="Email" />
+            <Input prefix={<MailOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Email" />
           </Form.Item>
           <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
-            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-text-muted)' }} />} placeholder="Mật khẩu" />
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Mật khẩu" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, fontWeight: 600 }}>
+            <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, borderRadius: 8, fontWeight: 700 }}>
               Đăng nhập
             </Button>
           </Form.Item>
@@ -73,16 +74,16 @@ export default function LoginPage() {
       children: (
         <Form layout="vertical" onFinish={handleSignUp} size="large" style={{ marginTop: 8 }}>
           <Form.Item name="fullName" rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}>
-            <Input prefix={<TeamOutlined style={{ color: 'var(--color-text-muted)' }} />} placeholder="Họ và tên" />
+            <Input prefix={<TeamOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Họ và tên" />
           </Form.Item>
           <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
-            <Input prefix={<MailOutlined style={{ color: 'var(--color-text-muted)' }} />} placeholder="Email" />
+            <Input prefix={<MailOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Email" />
           </Form.Item>
           <Form.Item name="password" rules={[{ required: true, min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }]}>
-            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-text-muted)' }} />} placeholder="Mật khẩu" />
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Mật khẩu" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, fontWeight: 600 }}>
+            <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, borderRadius: 8, fontWeight: 700 }}>
               Đăng ký tài khoản
             </Button>
           </Form.Item>
@@ -97,43 +98,49 @@ export default function LoginPage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)',
       padding: 24,
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      <GradientWaveBackground />
+
       <div style={{
         width: '100%',
         maxWidth: 420,
-        background: '#fff',
-        borderRadius: 16,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-        padding: '40px 32px',
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        borderRadius: 24,
+        boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.3)',
+        padding: '48px 40px',
+        zIndex: 1,
       }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
-            width: 48,
-            height: 48,
-            background: 'var(--color-primary, #4F46E5)',
-            borderRadius: 12,
+            width: 56,
+            height: 56,
+            background: 'var(--color-primary)',
+            borderRadius: 14,
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: 12,
+            marginBottom: 16,
+            boxShadow: '0 8px 16px rgba(var(--color-primary-rgb), 0.2)',
           }}>
-            <TeamOutlined style={{ color: '#fff', fontSize: 22 }} />
+            <TeamOutlined style={{ color: '#fff', fontSize: 26 }} />
           </div>
           <h1 style={{
             margin: 0,
-            fontSize: 24,
-            fontWeight: 800,
-            fontFamily: 'var(--font-title)',
-            color: '#1E293B',
-            letterSpacing: '-0.6px',
+            fontSize: 28,
+            fontWeight: 900,
+            color: '#0F172A',
+            letterSpacing: '-1px',
           }}>
-            People<span style={{ color: 'var(--color-primary, #4F46E5)' }}>Hub</span>
+            People<span style={{ color: 'var(--color-primary)' }}>Hub</span>
           </h1>
-          <p style={{ margin: '8px 0 0', fontSize: 14, color: '#64748B' }}>
-            Hệ thống quản lý nhân sự thông minh
+          <p style={{ margin: '8px 0 0', fontSize: 15, color: '#64748B', fontWeight: 500 }}>
+            Hệ thống Quản trị Nhân sự Hiện đại
           </p>
         </div>
 
@@ -141,17 +148,17 @@ export default function LoginPage() {
 
         {!isSupabaseConfigured && (
           <div style={{
-            marginTop: 16,
+            marginTop: 24,
             padding: '12px 16px',
-            background: '#FFFBEB',
-            border: '1px solid #FDE68A',
-            borderRadius: 8,
+            background: 'rgba(254, 252, 232, 0.8)',
+            border: '1px solid #FEF08A',
+            borderRadius: 12,
             fontSize: 12,
-            color: '#92400E',
-            lineHeight: 1.5,
+            color: '#854D0E',
+            lineHeight: 1.6,
           }}>
-            <strong>CHẾ ĐỘ DEMO:</strong> Ứng dụng đang chạy với dữ liệu mẫu.
-            Bấm "Đăng nhập" để vào trực tiếp. Sử dụng Role Switcher trên TopBar để chuyển đổi vai trò.
+            <div style={{ fontWeight: 800, marginBottom: 4 }}>Bản thử nghiệm (Demo)</div>
+            Bấm "Đăng nhập" để trải nghiệm ngay. Hệ thống đang tự động thiết lập các vai trò Admin/Nhân viên.
           </div>
         )}
       </div>

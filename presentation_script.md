@@ -1,39 +1,28 @@
-# Kịch bản Thuyết trình Kỹ thuật: Hệ thống PeopleHub HRM
+# Kịch bản Trình bày Dự án PeopleHub HRM
 
-## 1. Giới thiệu Tổng quan
-Kính thưa Hội đồng và quý đồng nghiệp, tôi xin phép trình bày về hệ thống PeopleHub HRM - một nền tảng Quản trị Nguồn nhân lực toàn diện được xây dựng theo kiến trúc hướng tính năng (Feature-based Architecture) và tiêu chuẩn bảo mật doanh nghiệp.
+Dưới đây là kịch bản gợi ý để bạn trình bày các tính năng của hệ thống PeopleHub HRM một cách chuyên nghiệp và ấn tượng.
 
-## 2. Kiến trúc Hệ thống và Tổ chức Mã nguồn
-Hệ thống được thiết kế nhằm đảm bảo khả năng mở rộng và bảo trì dễ dàng. Thay vì phân loại theo kiểu truyền thống (components, pages), chúng tôi tổ chức theo các Module nghiệp vụ (Features):
-- **Auth Feature**: Quản lý toàn bộ vòng đời xác thực của người dùng và tích hợp Hook kiểm tra quyền hạn (usePermission).
-- **Employee Feature**: Tập trung vào việc quản lý dữ liệu nhân sự, tích hợp lưu trữ hồ sơ tài liệu bảo mật.
-- **Leave Management Feature**: Xử lý quy trình phê duyệt nghỉ phép phức tạp.
-- **Attendance & Payroll**: Các module mới phục vụ nhu cầu tự tra cứu của nhân viên.
+---
 
-Mối tương quan (Mapping):
-- Giao diện người dùng được xây dựng bằng React.js và Ant Design.
-- Lớp dữ liệu và logic bảo mật được thực thi trực tiếp tại cơ sở dữ liệu Supabase thông qua hệ thống RLS (Row Level Security).
+## 1. Mở đầu: Ấn tượng đầu tiên (Trang Đăng nhập)
+*   **Thao tác**: Mở trang Đăng nhập (`/login`).
+*   **Nội dung nói**: "Chào mừng các bạn đến với PeopleHub. Như các bạn thấy, ngay từ trang đăng nhập, chúng tôi đã chú trọng vào trải nghiệm người dùng với phong cách thiết kế **Glassmorphism** hiện đại. Hình nền sóng hạt động (Dot Wave) được lập trình bằng Canvas tạo cảm giác công nghệ và sự chuyển động không ngừng, thể hiện một môi trường làm việc năng động."
 
-## 3. Hệ thống Phân quyền dựa trên Vai trò (RBAC)
-Đây là hạt nhân bảo mật của hệ thống. Chúng tôi triển khai 4 cấp độ quyền hạn:
-- **Admin**: Kiểm soát toàn bộ cấu hình hệ thống và nhật ký Audit.
-- **HR**: Chịu trách nhiệm quản lý hồ sơ nhân viên, tài liệu và ghi nhận các biến động nhân sự.
-- **Manager**: Có quyền giám sát và phê duyệt đơn từ của nhân viên thuộc phòng ban mình quản lý.
-- **Employee**: Quyền truy cập tự phục vụ vào hồ sơ cá nhân, bảng công và bảng lương.
+## 2. Tổng quan Dashboard: Trung tâm Điều hành thông minh
+*   **Thao tác**: Đăng nhập vào tài khoản Admin -> Dashboard.
+*   **Nội dung nói**: "Khi vào bên trong, Dashboard được thiết kế theo dạng **Bento Grid Layout**. Các khối thông tin quan trọng như **Tổng nhân viên, Điểm danh, Hoạt động mới** và **Quỹ lương** được sắp xếp khoa học, tự động co giãn theo màn hình (Responsive). Đặc biệt, thanh Sidebar có thể thu gọn linh hoạt bằng nút Menu trên TopBar để tiết kiệm không gian khi làm việc trên laptop."
 
-Kỹ thuật triển khai: Toàn bộ các truy vấn dữ liệu đều đi qua middleware phân quyền tại tầng Database, đảm bảo ngay cả khi có lỗ hổng ở Frontend, dữ liệu nhạy cảm vẫn được bảo vệ tuyệt đối.
+## 3. Hoạt động thời gian thực & Thông báo
+*   **Thao tác**: Chỉ vào khu vực 'Hoạt động mới' trên Dashboard và biểu tượng Chuông trên TopBar.
+*   **Nội dung nói**: "PeopleHub không chỉ là dữ liệu tĩnh. Mọi hoạt động như: nhân viên vừa nộp đơn nghỉ phép, hay có người đi làm muộn đều được cập nhật theo thời gian thực (Real-time). Admin sẽ nhận ngay thông báo (Badge màu đỏ) trên TopBar. Khi click vào, chúng ta có thể xem nhanh danh sách các đơn đang chờ duyệt."
 
-## 4. Nhật ký Hệ thống (Audit Logging) và Quy trình Phê duyệt
-Để đáp ứng các tiêu chuẩn quản trị chuyên nghiệp, hệ thống đã tích hợp module Audit Logging. Mọi thao tác như cập nhật thông tin lương, thay đổi trạng thái nhân viên đều được hệ thống tự động lưu vết (Action, Actor, Timestamp, Diff data).
+## 4. Quản lý Nhân sự & Phân quyền (RBAC)
+*   **Thao tác**: Di chuyển vào trang 'Nhân viên', sau đó thử dùng Role Switcher trên TopBar.
+*   **Nội dung nói**: "Hệ thống quản lý hồ sơ nhân viên chặt chẽ với cơ chế phân quyền RBAC. Admin và HR có thể xem toàn bộ hợp đồng, bảo hiểm, trong khi Nhân viên chỉ có thể tự quản lý thông tin cá nhân (Self-service). Công nghệ Row Level Security của Supabase đảm bảo dữ liệu của ai chỉ người đó thấy, tuyệt đối an toàn."
 
-Quy trình phê duyệt nghỉ phép đã được nâng cấp để hỗ trợ tương tác hai chiều. Cấp trên khi phê duyệt hoặc từ chối đơn bắt buộc phải để lại phản hồi hoặc lý do, giúp minh bạch hóa các quyết định quản lý.
+## 5. Quy trình Chấm công & Nghỉ phép
+*   **Thao tác**: Mở trang 'Nghỉ phép' hoặc 'Chấm công'.
+*   **Nội dung nói**: "Quy trình nộp đơn nghỉ phép cực kỳ đơn giản. Nhân viên chọn ngày, lý do và gửi. Hệ thống sẽ tự động tính toán số ngày và gửi thông báo cho quản lý. Bảng chấm công cũng hiển thị trực quan theo tuần, giúp nhân viên dễ dàng theo dõi giờ công của mình."
 
-## 5. Quản lý Tài liệu và Tra cứu Cá nhân
-Hệ thống sử dụng Supabase Storage với cơ chế Private Bucket để lưu trữ Hợp đồng, Bảo hiểm. Chỉ những người dùng có thẩm quyền (HR/Admin) hoặc chính nhân viên sở hữu tài liệu đó mới có link truy cập tạm thời để xem hoặc tải xuống.
-
-Tính năng tra cứu Bảng công và Bảng lương giúp giảm tải đáng kể cho bộ phận HCNS, đồng thời tăng tính chủ động cho nhân viên trong việc theo dõi thu nhập và ngày công lao động.
-
-## 6. Kết luận
-Hệ thống PeopleHub HRM không chỉ là một ứng dụng quản lý dữ liệu đơn thuần, mà còn là một minh chứng cho việc kết hợp giữa kiến trúc phần mềm hiện đại (React, Supabase) và các chuẩn mực quản trị hành chính chuyên nghiệp.
-
-Xin cảm ơn sự chú ý theo dõi của quý vị.
+## 6. Kết luận & Công nghệ
+*   **Nội dung nói**: "PeopleHub là sự kết hợp hoàn hảo giữa **React.js, Ant Design và Supabase**. Chúng tôi đã xây dựng một giải pháp HRM không chỉ mạnh mẽ về chức năng mà còn vượt trội về thẩm mỹ, sẵn sàng đáp ứng nhu cầu quản trị của các doanh nghiệp hiện đại. Xin cảm ơn!"

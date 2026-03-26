@@ -25,7 +25,13 @@ Hệ thống được xây dựng trên 4 cấp độ ủy quyền nghiêm ngặ
 - **Bảng công**: Hệ thống ghi nhận giờ vào/ra, tính toán trạng thái đi muộn hoặc về sớm theo thời gian thực.
 - **Bảng lương**: Phiếu lương chi tiết hàng tháng gồm lương cơ bản, phụ cấp, các khoản khấu trừ và thuế.
 
-### 2.4 Nhật ký hệ thống (Audit Logging)
+### 2.4 Giao diện Dashboard & UI/UX Đột phá
+- **Bento Grid Layout**: Dashboard thông minh tự động thay đổi theo kích thước màn hình, hiển thị các chỉ số quan trọng (Quỹ lương, Điểm danh, Hoạt động mới) một cách trực quan.
+- **Collapsible Sidebar**: Thanh điều hướng có khả năng thu gọn linh hoạt, tối ưu hóa không gian làm việc cho Admin.
+- **Real-time Notifications**: Hệ thống thông báo tức thời trên TopBar giúp quản trị viên nhận biết ngay khi có đơn nghỉ phép hoặc sự kiện mới cần xử lý.
+- **Modern Login Experience**: Trang đăng nhập sử dụng công nghệ **Wave Gradient** động với phong cách **Glassmorphism**, mang lại ấn tượng chuyên nghiệp ngay từ điểm chạm đầu tiên.
+
+### 2.5 Nhật ký hệ thống (Audit Logging)
 - Tự động ghi vết mọi thao tác nhạy cảm liên quan đến thay đổi dữ liệu nhân sự, tài chính và truy cập hệ thống.
 
 ## 3. Cấu trúc Cơ sở dữ liệu (Database Schema)

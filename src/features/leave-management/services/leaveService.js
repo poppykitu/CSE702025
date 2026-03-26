@@ -21,6 +21,40 @@ export async function getLeaveRequests() {
   return data
 }
 
+export async function getMyLeaveRequests(employeeId) {
+  if (!isSupabaseConfigured || !employeeId) return []
+
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .select('*')
+    .eq('employee_id', employeeId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function createLeaveRequest(payload) {
+  if (!isSupabaseConfigured) return
+
+  const { data, error } = await supabase
+    .from('leave_requests')
+    .insert([payload])
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  logAuditEvent({
+    tableName: 'leave_requests',
+    recordId: data.id,
+    action: AUDIT_ACTIONS.CREATE_LEAVE, // Make sure this exists or use a generic one
+    newData: payload
+  })
+
+  return data
+}
+
 export async function approveLeave(id, comment = '') {
   if (!isSupabaseConfigured) return
 

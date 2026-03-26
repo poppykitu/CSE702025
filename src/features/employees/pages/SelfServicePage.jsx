@@ -12,6 +12,7 @@ import { useAuth } from '@/features/auth/context/AuthContext'
 import { GENDER_LABELS, WORK_TYPE_LABELS, EMPLOYEE_STATUS } from '@/utils/constants'
 import { ROLE_LABELS, LEAVE_TYPE_LABELS, LEAVE_STATUS_LABELS, LEAVE_STATUS_COLORS } from '@/constants/roles'
 import { formatDate } from '@/utils/helpers'
+import { useMyLeaveRequests, useCreateLeave } from '@/features/leave-management/hooks/useLeaves'
 import dayjs from 'dayjs'
 
 export default function SelfServicePage() {
@@ -19,32 +20,28 @@ export default function SelfServicePage() {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false)
   const [leaveForm] = Form.useForm()
 
-  // Mock leave requests cho DEMO
-  const [leaveRequests] = useState([
-    {
-      id: '1',
-      type: 'annual',
-      start_date: '2026-04-01',
-      end_date: '2026-04-03',
-      reason: 'Nghỉ phép gia đình',
-      status: 'pending',
-      created_at: '2026-03-20',
-    },
-    {
-      id: '2',
-      type: 'sick',
-      start_date: '2026-03-10',
-      end_date: '2026-03-10',
-      reason: 'Khám sức khỏe định kỳ',
-      status: 'approved',
-      created_at: '2026-03-08',
-    },
-  ])
+  // Lấy dữ liệu thật từ database
+  const { data: leaveRequests = [], isLoading: isFetchingLeaves } = useMyLeaveRequests(profile?.id)
+  const createLeaveMutation = useCreateLeave()
 
-  const handleSubmitLeave = (values) => {
-    message.success('Đã gửi đơn nghỉ phép thành công! Đang chờ quản lý phê duyệt.')
-    setIsLeaveModalOpen(false)
-    leaveForm.resetFields()
+  const handleSubmitLeave = async (values) => {
+    try {
+      const payload = {
+        employee_id: profile.id,
+        type: values.type,
+        start_date: values.dateRange[0].format('YYYY-MM-DD'),
+        end_date: values.dateRange[1].format('YYYY-MM-DD'),
+        reason: values.reason,
+        status: 'pending'
+      }
+
+      await createLeaveMutation.mutateAsync(payload)
+      message.success('Đã gửi đơn nghỉ phép thành công! Đang chờ quản lý phê duyệt.')
+      setIsLeaveModalOpen(false)
+      leaveForm.resetFields()
+    } catch (err) {
+      message.error('Gửi đơn thất bại: ' + err.message)
+    }
   }
 
   const leaveColumns = [
@@ -77,7 +74,7 @@ export default function SelfServicePage() {
       dataIndex: 'status',
       key: 'status',
       render: (status) => {
-        const statusColor = LEAVE_STATUS_COLORS[status] || {}
+        const statusColor = LEAVE_STATUS_COLORS[status] || { color: '#666', bg: '#f5f5f5', border: '#d9d9d9' }
         return (
           <span style={{
             padding: '3px 10px',
@@ -139,6 +136,12 @@ export default function SelfServicePage() {
           <Descriptions.Item label="Vai trò">
             <Tag color="blue">{ROLE_LABELS[profile?.role] || 'Nhân viên'}</Tag>
           </Descriptions.Item>
+          <Descriptions.Item label="Giới tính">
+            <span>{GENDER_LABELS[profile?.gender] || '--'}</span>
+          </Descriptions.Item>
+          <Descriptions.Item label="Ngày vào làm">
+            <span>{formatDate(profile?.date_of_joining) || '--'}</span>
+          </Descriptions.Item>
         </Descriptions>
       </Card>
 
@@ -167,7 +170,8 @@ export default function SelfServicePage() {
           columns={leaveColumns}
           dataSource={leaveRequests}
           rowKey="id"
-          pagination={false}
+          loading={isFetchingLeaves}
+          pagination={{ pageSize: 5 }}
           size="small"
           locale={{ emptyText: 'Chưa có đơn nghỉ phép nào' }}
         />
@@ -194,13 +198,19 @@ export default function SelfServicePage() {
             />
           </Form.Item>
           <Form.Item name="dateRange" label="Thời gian" rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}>
-            <DatePicker.RangePicker style={{ width: '100%' }} />
+            <DatePicker.RangePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
           </Form.Item>
           <Form.Item name="reason" label="Lý do" rules={[{ required: true, message: 'Vui lòng nhập lý do' }]}>
             <Input.TextArea rows={3} placeholder="Nhập lý do xin nghỉ phép..." />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block style={{ height: 40 }}>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              block 
+              style={{ height: 40 }}
+              loading={createLeaveMutation.isPending}
+            >
               Gửi đơn nghỉ phép
             </Button>
           </Form.Item>
