@@ -94,6 +94,11 @@ export default function EmployeeDetail() {
       label: 'Chấm công (Admin)',
       children: <AttendanceManageTab employeeId={id} />,
     })
+    tabItems.push({
+      key: 'salary',
+      label: 'Lương (Admin)',
+      children: <SalaryTab employee={employee} />,
+    })
   }
 
   return (
@@ -309,15 +314,6 @@ function EmploymentTab({ employee }) {
       <Descriptions.Item label="Loại hợp đồng">
         {WORK_TYPE_LABELS[employee.work_type] || '—'}
       </Descriptions.Item>
-      {(isAdmin || isHR) && (
-        <Descriptions.Item label="Lương cơ bản">
-          <span style={{ fontWeight: 600, color: '#10B981' }}>
-            {employee.base_salary 
-              ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(employee.base_salary) 
-              : <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontWeight: 'normal' }}>Chưa thiết lập</span>}
-          </span>
-        </Descriptions.Item>
-      )}
       <Descriptions.Item label="Bản mềm Hợp đồng">
         {employee.contract_url ? (
           <Button 

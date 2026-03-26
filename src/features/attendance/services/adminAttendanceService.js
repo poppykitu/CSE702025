@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
 export const adminAttendanceService = {
   getEmployeeAttendance: async (employeeId, month, year) => {
