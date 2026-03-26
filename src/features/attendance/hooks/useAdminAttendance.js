@@ -10,10 +10,10 @@ export function useAdminEmployeeAttendance(employeeId, month, year) {
   })
 }
 
-export function useMonthlyAttendanceForAll(month, year) {
+export function useDateRangeAllAttendance(startDate, endDate) {
   return useQuery({
-    queryKey: ['admin_monthly_attendance', month, year],
-    queryFn: () => adminAttendanceService.getMonthlyAttendanceForAll(month, year)
+    queryKey: ['admin_attendance_range', startDate, endDate],
+    queryFn: () => adminAttendanceService.getAttendanceByDateRange(startDate, endDate)
   })
 }
 
@@ -23,7 +23,7 @@ export function useUpsertAttendance() {
     mutationFn: adminAttendanceService.upsertRecord,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin_attendance', variables.employee_id] })
-      queryClient.invalidateQueries({ queryKey: ['admin_monthly_attendance'] })
+      queryClient.invalidateQueries({ queryKey: ['admin_attendance_range'] })
       queryClient.invalidateQueries({ queryKey: ['attendance'] }) // global if needed
     },
     onError: (err) => message.error('Không thể lưu bản ghi chấm công: ' + err.message)

@@ -18,10 +18,7 @@ export const adminAttendanceService = {
     return data
   },
 
-  getAllAttendanceInMonth: async (month, year) => {
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`
-    const endDate = `${year}-${String(month).padStart(2, '0')}-31`
-
+  getAttendanceByDateRange: async (startDate, endDate) => {
     const { data: records, error } = await supabase
       .from('attendance_records')
       .select('*')
