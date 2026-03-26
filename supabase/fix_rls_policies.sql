@@ -36,10 +36,13 @@ CREATE POLICY "profiles_update_hr_admin"
   WITH CHECK (check_is_admin_or_hr());
 
 -- 3. Setup Storage for Employee Documents
--- Create bucket if not exists (Note: buckets table is in 'storage' schema)
+-- Create bucket if not exists and ensure it is PUBLIC for easy viewing
 INSERT INTO storage.buckets (id, name, public)
-SELECT 'employee_documents', 'employee_documents', false
+SELECT 'employee_documents', 'employee_documents', true
 WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'employee_documents');
+
+-- If it exists but is private, make it public
+UPDATE storage.buckets SET public = true WHERE id = 'employee_documents';
 
 -- Policies for employee_documents bucket
 DROP POLICY IF EXISTS "documents_upload_hr_admin" ON storage.objects;

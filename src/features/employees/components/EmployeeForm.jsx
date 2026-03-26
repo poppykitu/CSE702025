@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import {
   Form, Input, Select, DatePicker, Radio, Upload,
-  Button, Row, Col, Divider, message,
+  Button, Row, Col, message, InputNumber
 } from 'antd'
 import { UploadOutlined, LoadingOutlined, UserOutlined, FilePdfOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import { useAuth } from '@/features/auth/context/AuthContext'
 import { useDepartments, useDesignations } from '@/hooks/useDepartments'
 import EmployeeAvatar from './EmployeeAvatar'
 import { uploadAvatar, uploadContract } from '../services/employeeService'
@@ -27,6 +28,7 @@ const { Option } = Select
  */
 export default function EmployeeForm({ initialValues = {}, onSubmit, loading = false, isEdit = false }) {
   const [form] = Form.useForm()
+  const { isAdmin, isHR } = useAuth()
   const [selectedDeptId, setSelectedDeptId] = useState(initialValues.department_id || null)
   const [avatarUrl, setAvatarUrl] = useState(initialValues.avatar_url || null)
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -245,6 +247,23 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
               </div>
             </Form.Item>
           </Col>
+          
+          {/* Lương cơ bản - Chỉ Admin/HR mới thấy và sửa được */}
+          {(isAdmin || isHR) && (
+            <Col xs={24} md={12}>
+              <Form.Item name="base_salary" label="Mức lương cơ bản (VNĐ)" rules={[{ required: true, message: 'Bắt buộc' }]}>
+                <InputNumber 
+                  placeholder="VD: 15,000,000"
+                  style={{ width: '100%' }}
+                  min={0}
+                  step={500000}
+                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={value => value?.replace(/\$\s?|(,*)/g, '')}
+                />
+              </Form.Item>
+            </Col>
+          )}
+
           <Col span={24}>
             <Form.Item name="bio" label="Giới thiệu ngắn">
               <TextArea rows={3} placeholder="Vài dòng về kinh nghiệm và chuyên môn..." maxLength={500} showCount />
