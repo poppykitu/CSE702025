@@ -40,7 +40,8 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    const applyLink = `${APP_URL}/apply`
+    const baseUrl = APP_URL.replace(/\/$/, '')
+    const applyLink = `${baseUrl}/apply`
 
     const emailHtml = `
 <!DOCTYPE html>
