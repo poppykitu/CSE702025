@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Form, Input, Button, message, Tabs } from 'antd'
+import { Form, Input, Button, message, Tabs, Checkbox } from 'antd'
 import { MailOutlined, LockOutlined, TeamOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import { signInWithEmail, signUpWithEmail, isSupabaseConfigured } from '@/lib/supabaseClient'
 import GradientWaveBackground from '@/components/common/GradientWaveBackground'
 
@@ -54,15 +55,23 @@ export default function LoginPage() {
       label: 'Đăng nhập',
       children: (
         <Form layout="vertical" onFinish={handleLogin} size="large" style={{ marginTop: 8 }}>
-          <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
+          <Form.Item name="email" rules={[{ required: true, message: 'Vui long nhap email' }, { type: 'email', message: 'Email khong hop le' }]}>
             <Input prefix={<MailOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Email" />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
-            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Mật khẩu" />
+          <Form.Item name="password" rules={[{ required: true, message: 'Vui long nhap mat khau' }]}>
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Mat khau" />
           </Form.Item>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Form.Item name="remember" valuePropName="checked" noStyle>
+              <Checkbox>Ghi nho dang nhap</Checkbox>
+            </Form.Item>
+            <Link to="/forgot-password" style={{ fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>
+              Quen mat khau?
+            </Link>
+          </div>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, borderRadius: 8, fontWeight: 700 }}>
-              Đăng nhập
+              Dang nhap
             </Button>
           </Form.Item>
         </Form>
@@ -73,18 +82,34 @@ export default function LoginPage() {
       label: 'Đăng ký',
       children: (
         <Form layout="vertical" onFinish={handleSignUp} size="large" style={{ marginTop: 8 }}>
-          <Form.Item name="fullName" rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}>
-            <Input prefix={<TeamOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Họ và tên" />
+          <Form.Item name="fullName" rules={[{ required: true, message: 'Vui long nhap ho ten' }]}>
+            <Input prefix={<TeamOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Ho va ten" />
           </Form.Item>
-          <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
+          <Form.Item name="email" rules={[{ required: true, message: 'Vui long nhap email' }, { type: 'email', message: 'Email khong hop le' }]}>
             <Input prefix={<MailOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Email" />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }]}>
-            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Mật khẩu" />
+          <Form.Item name="password" rules={[{ required: true, min: 8, message: 'Mat khau toi thieu 8 ky tu' }]} hasFeedback>
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Mat khau (toi thieu 8 ky tu)" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            hasFeedback
+            rules={[
+              { required: true, message: 'Vui long xac nhan mat khau' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) return Promise.resolve()
+                  return Promise.reject(new Error('Mat khau xac nhan khong khop'))
+                },
+              }),
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Xac nhan mat khau" />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, borderRadius: 8, fontWeight: 700 }}>
-              Đăng ký tài khoản
+              Dang ky Tai khoan
             </Button>
           </Form.Item>
         </Form>

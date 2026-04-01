@@ -6,6 +6,8 @@ import AppLayout from '@/components/layout/AppLayout'
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute'
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext'
 import LoginPage from '@/features/auth/pages/LoginPage'
+import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage'
+import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage'
 
 // Features: Employees
 import EmployeeDirectory from '@/features/employees/pages/EmployeeDirectory'
@@ -21,9 +23,14 @@ import LeaveManagementPage from '@/features/leave-management/pages/LeaveManageme
 import MyAttendancePage from '@/features/attendance/pages/MyAttendancePage'
 import MyPayslipsPage from '@/features/payroll/pages/MyPayslipsPage'
 
+// Features: Recruitment (ATS)
+import PublicJobApplicationPage from '@/features/recruitment/pages/PublicJobApplicationPage'
+import RecruitmentManagementPage from '@/features/recruitment/pages/RecruitmentManagementPage'
+
 // Pages (Common)
 import DashboardPage from '@/pages/DashboardPage'
 import DepartmentManagementPage from '@/pages/DepartmentManagementPage'
+import ApprovalCenterPage from '@/pages/ApprovalCenterPage'
 import UnauthorizedPage from '@/pages/UnauthorizedPage'
 import ConnectivityTestPage from '@/pages/ConnectivityTestPage'
 
@@ -67,6 +74,9 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/apply" element={<PublicJobApplicationPage />} />
         <Route path="/test-connection" element={<ConnectivityTestPage />} />
 
         {/* Protected routes (trong AppLayout co Sidebar + TopBar) */}
@@ -142,6 +152,20 @@ function AnimatedRoutes() {
           <Route path="/my-payslips" element={
             <ProtectedRoute allowedRoles={[ROLES.EMPLOYEE, ROLES.MANAGER, ROLES.HR, ROLES.ADMIN]}>
               <PageWrapper><MyPayslipsPage /></PageWrapper>
+            </ProtectedRoute>
+          } />
+
+          {/* Recruitment ATS: Admin + HR */}
+          <Route path="/recruitment" element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.HR]}>
+              <PageWrapper><RecruitmentManagementPage /></PageWrapper>
+            </ProtectedRoute>
+          } />
+
+          {/* Approval Center: Admin + HR */}
+          <Route path="/approval-center" element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.HR]}>
+              <PageWrapper><ApprovalCenterPage /></PageWrapper>
             </ProtectedRoute>
           } />
 

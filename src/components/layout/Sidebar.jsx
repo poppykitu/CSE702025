@@ -9,6 +9,8 @@ import {
   FileTextOutlined,
   WalletOutlined,
   HistoryOutlined,
+  SolutionOutlined,
+  CheckSquareOutlined,
 } from '@ant-design/icons'
 import { usePermission } from '@/features/auth/hooks/usePermission'
 import { PERMISSIONS, ROLE_LABELS, ROLE_COLORS } from '@/constants/roles'
@@ -68,9 +70,23 @@ const ALL_NAV_ITEMS = [
   {
     key: 'my-payslips',
     path: '/my-payslips',
-    label: 'Bảng lương',
+    label: 'Bang luong',
     icon: <WalletOutlined />,
     roles: ['employee', 'manager', 'hr', 'admin'],
+  },
+  {
+    key: 'recruitment',
+    path: '/recruitment',
+    label: 'Tuyen dung',
+    icon: <SolutionOutlined />,
+    roles: ['admin', 'hr'],
+  },
+  {
+    key: 'approval-center',
+    path: '/approval-center',
+    label: 'Trung tam Phe duyet',
+    icon: <CheckSquareOutlined />,
+    roles: ['admin', 'hr'],
   },
 ]
 
@@ -188,7 +204,7 @@ export default function Sidebar({ collapsed }) {
           color: 'var(--color-text-muted)',
           textAlign: 'center',
         }}>
-          PeopleHub v2.0 RBAC
+          PeopleHub v2.0
         </div>
       )}
     </aside>

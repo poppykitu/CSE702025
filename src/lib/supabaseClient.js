@@ -58,16 +58,52 @@ export async function signInWithEmail(email, password) {
 }
 
 /**
- * Dang ky tai khoan moi
+ * Dang ky tai khoan moi voi xac minh Email (Magic Link)
  */
 export async function signUpWithEmail(email, password, metadata = {}) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: metadata },
+    options: {
+      data: metadata,
+      emailRedirectTo: `${window.location.origin}/dashboard`,
+    },
   })
   if (error) throw error
   return data
+}
+
+/**
+ * Gui Magic Link dat lai mat khau ve email (Forgot Password)
+ */
+export async function requestPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+  if (error) throw error
+}
+
+/**
+ * Cap nhat mat khau moi (dung tren trang Reset Password sau khi click Magic Link)
+ * Khong yeu cau mat khau cu
+ */
+export async function updatePassword(newPassword) {
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw error
+  return data
+}
+
+/**
+ * Gui Magic Link dang nhap khong can mat khau (dung cho Onboarding)
+ */
+export async function sendMagicLink(email, redirectTo = '/dashboard') {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}${redirectTo}`,
+    },
+  })
+  if (error) throw error
 }
 
 // Log trang thai khoi tao
