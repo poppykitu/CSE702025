@@ -14,15 +14,19 @@ import {
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { isSupabaseConfigured } from '@/lib/supabaseClient'
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from '@/constants/roles'
-import { useNotifications } from '@/hooks/useNotifications'
+import { useNotifications, useMarkAllRead } from '@/hooks/useNotifications'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+dayjs.extend(relativeTime)
 
 export default function TopBar({ onToggleSidebar, isCollapsed }) {
   const { user, profile, role, signOut, switchMockRole } = useAuth()
   const { data: notifications = [], isLoading: isNotiLoading } = useNotifications()
+  const { mutate: markAllRead } = useMarkAllRead()
   const location = useLocation()
   const navigate = useNavigate()
 
+  const unreadCount = notifications.filter(n => !n.is_read).length
   const roleColor = ROLE_COLORS[role] || ROLE_COLORS.employee
 
   const userMenuItems = [
@@ -42,37 +46,73 @@ export default function TopBar({ onToggleSidebar, isCollapsed }) {
     { key: 'logout', label: 'Đăng xuất', icon: <LogoutOutlined />, danger: true, onClick: signOut },
   ]
 
+  const NOTI_ICON_MAP = {
+    leave_request:        { icon: <CalendarOutlined />, bg: '#E0F2FE', color: '#0369A1' },
+    profile_update:       { icon: <UserOutlined />,     bg: '#F3E8FF', color: '#7C3AED' },
+    application_received: { icon: <TeamOutlined />,     bg: '#DCFCE7', color: '#16A34A' },
+    interview_scheduled:  { icon: <CalendarOutlined />, bg: '#FEF9C3', color: '#CA8A04' },
+    applicant_hired:      { icon: <SettingOutlined />,  bg: '#DBEAFE', color: '#1D4ED8' },
+  }
+
   const notificationContent = (
-    <div style={{ width: 320 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, borderBottom: '1px solid #f0f0f0', paddingBottom: 8 }}>
-        <span style={{ fontWeight: 600 }}>Thông báo ({notifications.length})</span>
-        {notifications.length > 0 && <Link to="/leaves" style={{ fontSize: 12 }}>Xem tất cả</Link>}
+    <div style={{ width: 340 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderBottom: '1px solid #F0F0F0', paddingBottom: 10 }}>
+        <span style={{ fontWeight: 700, fontSize: 14 }}>Thong bao {unreadCount > 0 && <span style={{ fontSize: 12, color: '#EF4444', fontWeight: 500 }}>({unreadCount} moi)</span>}</span>
+        {unreadCount > 0 && (
+          <span
+            onClick={() => markAllRead()}
+            style={{ fontSize: 12, color: 'var(--color-primary)', cursor: 'pointer', fontWeight: 500 }}
+          >
+            Danh dau da doc
+          </span>
+        )}
       </div>
       <List
         size="small"
         loading={isNotiLoading}
-        dataSource={notifications}
-        locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có thông báo mới" /> }}
-        renderItem={item => (
-          <List.Item
-            key={item.id}
-            onClick={() => { navigate(item.link); }}
-            style={{ cursor: 'pointer', padding: '10px 8px', borderRadius: 4, transition: 'background 0.2s' }}
-            className="noti-item-hover"
-          >
-            <List.Item.Meta
-              avatar={<Avatar icon={<CalendarOutlined />} style={{ backgroundColor: '#e6f4ff', color: '#1677ff' }} />}
-              title={<span style={{ fontSize: 13, fontWeight: 600 }}>{item.title}</span>}
-              description={
-                <div style={{ fontSize: 12 }}>
-                  <div>{item.description}</div>
-                  <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>{dayjs(item.time).fromNow()}</div>
-                </div>
-              }
-            />
-          </List.Item>
-        )}
+        dataSource={notifications.slice(0, 8)}
+        locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Khong co thong bao moi" /> }}
+        renderItem={item => {
+          const iconCfg = NOTI_ICON_MAP[item.type] || { icon: <BellOutlined />, bg: '#F1F5F9', color: '#64748B' }
+          return (
+            <List.Item
+              key={item.id}
+              onClick={() => navigate(item.link)}
+              style={{
+                cursor: 'pointer',
+                padding: '10px 6px',
+                borderRadius: 8,
+                transition: 'background 0.15s',
+                background: item.is_read ? 'transparent' : '#F0F9FF',
+                borderLeft: item.is_read ? 'none' : '3px solid #3B82F6',
+                paddingLeft: item.is_read ? 6 : 10,
+              }}
+              className="noti-item-hover"
+            >
+              <List.Item.Meta
+                avatar={
+                  <Avatar
+                    icon={iconCfg.icon}
+                    style={{ backgroundColor: iconCfg.bg, color: iconCfg.color, flexShrink: 0 }}
+                  />
+                }
+                title={<span style={{ fontSize: 13, fontWeight: item.is_read ? 500 : 700 }}>{item.title}</span>}
+                description={
+                  <div style={{ fontSize: 12 }}>
+                    <div style={{ color: '#475569' }}>{item.description}</div>
+                    <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>{dayjs(item.time).fromNow()}</div>
+                  </div>
+                }
+              />
+            </List.Item>
+          )
+        }}
       />
+      {notifications.length > 8 && (
+        <div style={{ textAlign: 'center', padding: '8px 0', borderTop: '1px solid #F0F0F0' }}>
+          <Link to="/approval-center" style={{ fontSize: 12 }}>Xem tat ca thong bao</Link>
+        </div>
+      )}
     </div>
   )
 
@@ -173,7 +213,7 @@ export default function TopBar({ onToggleSidebar, isCollapsed }) {
         )}
 
         <Popover content={notificationContent} trigger="click" placement="bottomRight" arrow={{ pointAtCenter: true }}>
-          <Badge count={notifications.length} size="small" offset={[-2, 2]}>
+          <Badge count={unreadCount} size="small" offset={[-2, 2]}>
             <button style={{
               width: 34,
               height: 34,
