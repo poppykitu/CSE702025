@@ -1,10 +1,11 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Button, Tabs, Descriptions, Tag, Modal, Skeleton, message } from 'antd'
+import { Button, Tabs, Descriptions, Tag, Modal, Skeleton, message, Timeline, Empty } from 'antd'
 import {
   EditOutlined, ArrowLeftOutlined,
   MailOutlined, PhoneOutlined, EnvironmentOutlined,
   CalendarOutlined, TeamOutlined, UserOutlined,
   ExclamationCircleOutlined, FilePdfOutlined,
+  BookOutlined, BankOutlined, ClockCircleOutlined,
 } from '@ant-design/icons'
 import { useEmployee } from '@/features/employees/hooks/useEmployees'
 import { useTerminateEmployee } from '@/features/employees/hooks/useEmployees'
@@ -73,17 +74,38 @@ export default function EmployeeDetail() {
   const tabItems = [
     {
       key: 'employment',
-      label: 'Thông tin việc làm',
+      label: 'Thong tin viec lam',
       children: <EmploymentTab employee={employee} />,
     },
     {
       key: 'personal',
-      label: 'Thông tin cá nhân',
+      label: 'Thong tin ca nhan',
       children: <PersonalTab employee={employee} />,
     },
     {
+      key: 'academic',
+      label: (
+        <span><BookOutlined style={{ marginRight: 5 }} />Hoc van</span>
+      ),
+      children: <AcademicTab employee={employee} />,
+    },
+    {
+      key: 'experience',
+      label: (
+        <span><BankOutlined style={{ marginRight: 5 }} />Kinh nghiem</span>
+      ),
+      children: <WorkExperienceTab employee={employee} />,
+    },
+    {
+      key: 'schedule',
+      label: (
+        <span><ClockCircleOutlined style={{ marginRight: 5 }} />Lich lam viec</span>
+      ),
+      children: <WorkScheduleTab employee={employee} />,
+    },
+    {
       key: 'documents',
-      label: 'Tài liệu',
+      label: 'Tai lieu',
       children: <DocumentsTab employeeId={id} />,
     },
   ]
@@ -356,20 +378,186 @@ function PersonalTab({ employee }) {
           {employee.email}
         </a>
       </Descriptions.Item>
-      <Descriptions.Item label="Điện thoại">
+      <Descriptions.Item label="Dien thoai">
         {employee.phone || '—'}
       </Descriptions.Item>
-      <Descriptions.Item label="Giới tính">
+      <Descriptions.Item label="Gioi tinh">
         {GENDER_LABELS[employee.gender] || '—'}
       </Descriptions.Item>
-      <Descriptions.Item label="Ngày sinh">
+      <Descriptions.Item label="Ngay sinh">
         {formatDate(employee.date_of_birth)}
       </Descriptions.Item>
-      <Descriptions.Item label="Địa chỉ" span={2}>
+      <Descriptions.Item label="Dia chi" span={2}>
         <div style={{ height: 'auto', minHeight: '32px', display: 'flex', alignItems: 'center' }}>
           {employee.address || '—'}
         </div>
       </Descriptions.Item>
     </Descriptions>
+  )
+}
+
+// ============================================================
+// AcademicTab — Hoc van (academic_background JSONB)
+// ============================================================
+function AcademicTab({ employee }) {
+  const records = employee.academic_background || []
+
+  if (records.length === 0) {
+    return <Empty description="Chua co thong tin hoc van" style={{ padding: '40px 0' }} />
+  }
+
+  return (
+    <div style={{ padding: '16px 0' }}>
+      <Timeline
+        items={records.map((item, i) => ({
+          key: i,
+          color: 'blue',
+          children: (
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: 10,
+              padding: '12px 16px',
+              marginBottom: 4,
+            }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#0F172A' }}>{item.degree}</div>
+              <div style={{ fontSize: 13, color: '#4F46E5', fontWeight: 600, marginTop: 2 }}>{item.institution}</div>
+              <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>
+                {item.field && <span style={{ marginRight: 12 }}>{item.field}</span>}
+                {item.year && <Tag color="blue">{item.year}</Tag>}
+              </div>
+              {item.note && <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 6, fontStyle: 'italic' }}>{item.note}</div>}
+            </div>
+          ),
+        }))}
+      />
+    </div>
+  )
+}
+
+// ============================================================
+// WorkExperienceTab — Kinh nghiem (work_experience JSONB)
+// ============================================================
+function WorkExperienceTab({ employee }) {
+  const records = employee.work_experience || []
+
+  if (records.length === 0) {
+    return <Empty description="Chua co lich su cong tac" style={{ padding: '40px 0' }} />
+  }
+
+  return (
+    <div style={{ padding: '16px 0' }}>
+      <Timeline
+        items={records.map((item, i) => ({
+          key: i,
+          color: item.to ? 'gray' : 'green',
+          children: (
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: 10,
+              padding: '12px 16px',
+              marginBottom: 4,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#0F172A' }}>{item.title}</div>
+                  <div style={{ fontSize: 13, color: '#4F46E5', fontWeight: 600, marginTop: 2 }}>{item.company}</div>
+                </div>
+                <Tag color={item.to ? 'default' : 'success'}>
+                  {item.from} — {item.to || 'Hien tai'}
+                </Tag>
+              </div>
+              {item.description && (
+                <div style={{ fontSize: 13, color: '#475569', marginTop: 8, lineHeight: 1.6 }}>
+                  {item.description}
+                </div>
+              )}
+            </div>
+          ),
+        }))}
+      />
+    </div>
+  )
+}
+
+// ============================================================
+// WorkScheduleTab — Lich lam viec (work_schedule JSONB)
+// ============================================================
+const DAY_LABELS = {
+  Mon: 'Thu 2', Tue: 'Thu 3', Wed: 'Thu 4',
+  Thu: 'Thu 5', Fri: 'Thu 6', Sat: 'Thu 7', Sun: 'CN'
+}
+const ALL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+function WorkScheduleTab({ employee }) {
+  const schedule = employee.work_schedule || {}
+  const hasSchedule = schedule.shift_start || schedule.work_days?.length > 0
+
+  if (!hasSchedule) {
+    return <Empty description="Chua co lich lam viec" style={{ padding: '40px 0' }} />
+  }
+
+  return (
+    <div style={{ padding: '20px 0' }}>
+      {/* Shift time */}
+      {schedule.shift_start && schedule.shift_end && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          background: '#EEF2FF',
+          border: '1px solid #C7D2FE',
+          borderRadius: 12,
+          padding: '16px 24px',
+          marginBottom: 20,
+        }}>
+          <ClockCircleOutlined style={{ fontSize: 28, color: '#4F46E5' }} />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18, color: '#0F172A', fontFamily: 'monospace' }}>
+              {schedule.shift_start} — {schedule.shift_end}
+            </div>
+            <div style={{ fontSize: 12, color: '#6366F1', fontWeight: 500 }}>Gio lam viec</div>
+          </div>
+        </div>
+      )}
+
+      {/* Work days grid */}
+      {schedule.work_days && (
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Ngay lam viec</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {ALL_DAYS.map(day => {
+              const active = schedule.work_days.includes(day)
+              return (
+                <div key={day} style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 10,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: active ? '#4F46E5' : '#F1F5F9',
+                  border: `2px solid ${active ? '#4F46E5' : '#E2E8F0'}`,
+                  cursor: 'default',
+                  transition: 'all 0.2s',
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: active ? '#fff' : '#94A3B8' }}>
+                    {DAY_LABELS[day]}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {schedule.note && (
+        <div style={{ marginTop: 16, fontSize: 13, color: '#64748B', fontStyle: 'italic' }}>
+          Ghi chu: {schedule.note}
+        </div>
+      )}
+    </div>
   )
 }

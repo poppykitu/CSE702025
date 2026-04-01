@@ -5,13 +5,13 @@ import {
 } from 'antd'
 import {
   EyeOutlined, CheckOutlined, CloseOutlined, CalendarOutlined,
-  UserOutlined, FileTextOutlined, TrophyOutlined
+  UserOutlined, FileTextOutlined, TrophyOutlined, CopyOutlined, MailOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useApplications, useUpdateApplicationStage, useScheduleInterview, useHireApplicant } from '../hooks/useRecruitment'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { useEmployees } from '@/features/employees/hooks/useEmployees'
-import { sendMagicLink } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
 const { Text } = Typography
 const { TextArea } = Input
@@ -35,8 +35,11 @@ export default function RecruitmentManagementPage() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [interviewModal, setInterviewModal] = useState(false)
   const [rejectModal, setRejectModal] = useState(false)
+  const [inviteModal, setInviteModal] = useState(false)
+  const [inviteSending, setInviteSending] = useState(false)
   const [interviewForm] = Form.useForm()
   const [rejectForm] = Form.useForm()
+  const [inviteForm] = Form.useForm()
 
   const { data: applications = [], isLoading } = useApplications(filterStage ? { stage: filterStage } : {})
   const { data: allProfiles = [] } = useEmployees()
@@ -97,6 +100,38 @@ export default function RecruitmentManagementPage() {
         }
       },
     })
+  }
+
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/apply`
+    navigator.clipboard.writeText(link)
+      .then(() => message.success('Da sao chep link ung tuyen vao bo nho dem!'))
+      .catch(() => message.error('Khong the sao chep. Vui long sao chep thu cong: ' + link))
+  }
+
+  const handleSendInvite = async (values) => {
+    setInviteSending(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('send-invite', {
+        body: {
+          email: values.email,
+          note: values.note,
+          position: values.position,
+          sender_name: profile?.full_name || 'PeopleHub HR Team',
+        },
+      })
+
+      if (error) throw new Error(error.message)
+      if (data?.error) throw new Error(data.error)
+
+      message.success(`Da gui loi moi ung tuyen den ${values.email} thanh cong!`)
+      setInviteModal(false)
+      inviteForm.resetFields()
+    } catch (err) {
+      message.error('Gui loi moi that bai: ' + err.message)
+    } finally {
+      setInviteSending(false)
+    }
   }
 
   const openDetail = (app) => {
@@ -211,14 +246,21 @@ export default function RecruitmentManagementPage() {
             He thong Theo doi Ung vien (ATS) — {applications.length} ho so
           </p>
         </div>
-        <Button
-          type="default"
-          icon={<FileTextOutlined />}
-          href="/apply"
-          target="_blank"
-        >
-          Link Ung tuyen Cong khai
-        </Button>
+        <Space>
+          <Button
+            icon={<CopyOutlined />}
+            onClick={handleCopyLink}
+          >
+            Sao chep Link Ung tuyen
+          </Button>
+          <Button
+            type="primary"
+            icon={<MailOutlined />}
+            onClick={() => setInviteModal(true)}
+          >
+            Gui Loi moi Ung tuyen
+          </Button>
+        </Space>
       </div>
 
       {/* Stage Filter */}
@@ -358,6 +400,77 @@ export default function RecruitmentManagementPage() {
           </Form.Item>
           <Button danger htmlType="submit" block loading={isUpdating}>
             Xac nhan Tu choi
+          </Button>
+        </Form>
+      </Modal>
+
+      {/* Invite Modal */}
+      <Modal
+        title="Gui Loi moi Ung tuyen"
+        open={inviteModal}
+        onCancel={() => { setInviteModal(false); inviteForm.resetFields() }}
+        footer={null}
+        width={480}
+      >
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ margin: 0, color: '#64748B', fontSize: 14 }}>
+            He thong se gui mot email chua link ung tuyen cong khai den ung vien. Ung vien nhan vao link se duoc dua thang den trang nop ho so.
+          </p>
+          <div style={{
+            marginTop: 12,
+            padding: '10px 14px',
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+          }}>
+            <span style={{ fontSize: 13, color: '#475569', wordBreak: 'break-all' }}>
+              {window.location.origin}/apply
+            </span>
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={handleCopyLink}
+              type="text"
+            />
+          </div>
+        </div>
+        <Form form={inviteForm} layout="vertical" onFinish={handleSendInvite}>
+          <Form.Item
+            name="email"
+            label="Email Ung vien"
+            rules={[
+              { required: true, message: 'Vui long nhap email ung vien' },
+              { type: 'email', message: 'Email khong hop le' },
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined style={{ color: '#94A3B8' }} />}
+              placeholder="candidate@email.com"
+              size="large"
+            />
+          </Form.Item>
+          <Form.Item name="position" label="Vi tri Ung tuyen (tuy chon)">
+            <Input placeholder="Frontend Developer, HR Manager..." />
+          </Form.Item>
+          <Form.Item name="note" label="Ghi chu them (tuy chon)">
+            <TextArea
+              rows={3}
+              placeholder="Xin chao, chung toi muon moi ban ung tuyen vi tri..."
+            />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={inviteSending}
+            block
+            size="large"
+            icon={<MailOutlined />}
+          >
+            Gui Loi moi
           </Button>
         </Form>
       </Modal>

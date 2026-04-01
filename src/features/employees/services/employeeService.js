@@ -21,7 +21,7 @@ export async function getEmployees({ search = '', departmentIds = [], status = '
     .order('full_name', { ascending: true })
 
   if (search) {
-    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,employee_id.ilike.%${search}%`)
+    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,employee_id.ilike.%${search}%,phone.ilike.%${search}%`)
   }
 
   if (departmentIds.length > 0) {

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.ns", "deno.unstable"],
+    "types": ["https://deno.land/x/supabase@1.0.0-beta.7/mod.ts"]
+  },
+  "imports": {
+    "jsr:@supabase/functions-js/": "https://esm.sh/jsr/@supabase/functions-js/"
+  }
+}
