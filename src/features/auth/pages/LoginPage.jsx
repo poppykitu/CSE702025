@@ -40,7 +40,7 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      await signUpWithEmail(values.email, values.password, { full_name: values.fullName })
+      await signUpWithEmail(values.email, values.password, { full_name: values.fullName, role: 'hr' })
       message.success('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.')
     } catch (err) {
       message.error('Đăng ký thất bại: ' + err.message)
@@ -79,9 +79,23 @@ export default function LoginPage() {
     },
     {
       key: 'signup',
-      label: 'Đăng ký',
+      label: 'Đăng ký HR',
       children: (
         <Form layout="vertical" onFinish={handleSignUp} size="large" style={{ marginTop: 8 }}>
+          <div style={{
+            padding: '10px 14px',
+            background: '#EEF2FF',
+            border: '1px solid #C7D2FE',
+            borderRadius: 10,
+            marginBottom: 16,
+            fontSize: 12,
+            color: '#4338CA',
+            lineHeight: 1.5,
+          }}>
+            <strong>Đăng ký tài khoản HR Manager</strong>
+            <br />
+            Nhân viên sẽ được tạo tài khoản tự động khi HR tuyển dụng thành công.
+          </div>
           <Form.Item name="fullName" rules={[{ required: true, message: 'Vui long nhap ho ten' }]}>
             <Input prefix={<TeamOutlined style={{ color: 'var(--color-primary)' }} />} placeholder="Ho va ten" />
           </Form.Item>
@@ -109,7 +123,7 @@ export default function LoginPage() {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} block style={{ height: 44, borderRadius: 8, fontWeight: 700 }}>
-              Dang ky Tai khoan
+              Dang ky Tai khoan HR
             </Button>
           </Form.Item>
         </Form>
