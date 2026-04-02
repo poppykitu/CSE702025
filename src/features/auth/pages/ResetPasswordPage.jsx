@@ -20,9 +20,9 @@ export default function ResetPasswordPage() {
       return
     }
 
-    // Listen for the RECOVERY event from the Magic Link
+    // Listen for the RECOVERY or SIGNED_IN event from the Magic Link
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setSessionValid(true)
       }
       setVerifying(false)

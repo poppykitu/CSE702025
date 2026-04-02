@@ -75,10 +75,15 @@ export async function signUpWithEmail(email, password, metadata = {}) {
 
 /**
  * Gui Magic Link dat lai mat khau ve email (Forgot Password)
+ * Su dung signInWithOtp thay vi resetPasswordForEmail de dam bao email duoc gui thanh cong
  */
 export async function requestPasswordReset(email) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false,
+      emailRedirectTo: `${window.location.origin}/reset-password`,
+    },
   })
   if (error) throw error
 }
