@@ -8,6 +8,7 @@ import {
   SettingOutlined,
   FileTextOutlined,
   WalletOutlined,
+  DollarOutlined,
   HistoryOutlined,
   SolutionOutlined,
   CheckSquareOutlined,
@@ -63,15 +64,22 @@ const ALL_NAV_ITEMS = [
   {
     key: 'my-payslips',
     path: '/my-payslips',
-    label: 'Bảng lương',
+    label: 'Phiếu lương của tôi',
     icon: <WalletOutlined />,
-    roles: ['employee', 'manager', 'hr', 'admin'],
+    roles: ['employee', 'manager'],
   },
   {
     key: 'recruitment',
     path: '/recruitment',
     label: 'Tuyển dụng',
     icon: <SolutionOutlined />,
+    roles: ['admin', 'hr'],
+  },
+  {
+    key: 'payroll',
+    path: '/payroll',
+    label: 'Quản lý Bảng lương',
+    icon: <DollarOutlined />,
     roles: ['admin', 'hr'],
   },
   {

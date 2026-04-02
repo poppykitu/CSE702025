@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import {
-  Form, Input, Select, DatePicker, Radio, Upload,
+  Form, Input, Select, DatePicker, TimePicker, Radio, Upload,
   Button, Row, Col, message, InputNumber, Divider
 } from 'antd'
-import { UploadOutlined, LoadingOutlined, UserOutlined, FilePdfOutlined } from '@ant-design/icons'
+import { UploadOutlined, LoadingOutlined, FilePdfOutlined, ClockCircleOutlined, DollarOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useAuth } from '@/features/auth/context/AuthContext'
 import { useDepartments, useDesignations } from '@/hooks/useDepartments'
@@ -41,11 +41,14 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
   // Populate form khi edit
   useEffect(() => {
     if (initialValues && Object.keys(initialValues).length > 0) {
+      const sched = initialValues.work_schedule || {}
       form.setFieldsValue({
         ...initialValues,
         date_of_birth: initialValues.date_of_birth ? dayjs(initialValues.date_of_birth) : null,
         date_of_joining: initialValues.date_of_joining ? dayjs(initialValues.date_of_joining) : null,
         date_of_termination: initialValues.date_of_termination ? dayjs(initialValues.date_of_termination) : null,
+        work_start_time: sched.start_time ? dayjs(sched.start_time, 'HH:mm') : null,
+        work_end_time: sched.end_time ? dayjs(sched.end_time, 'HH:mm') : null,
       })
       setAvatarUrl(initialValues.avatar_url || null)
       setContractUrl(initialValues.contract_url || null)
@@ -89,10 +92,17 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
   }
 
   const handleFinish = async (values) => {
+    // Gom giờ vào/tan thành work_schedule JSONB
+    const work_schedule = {
+      start_time: values.work_start_time ? values.work_start_time.format('HH:mm') : null,
+      end_time: values.work_end_time ? values.work_end_time.format('HH:mm') : null,
+    }
+    const { work_start_time, work_end_time, ...rest } = values
     const payload = {
-      ...values,
+      ...rest,
       avatar_url: avatarUrl,
       contract_url: contractUrl,
+      work_schedule,
       date_of_birth: values.date_of_birth ? values.date_of_birth.format('YYYY-MM-DD') : null,
       date_of_joining: values.date_of_joining ? values.date_of_joining.format('YYYY-MM-DD') : null,
       date_of_termination: values.date_of_termination ? values.date_of_termination.format('YYYY-MM-DD') : null,
@@ -248,20 +258,62 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
             </Form.Item>
           </Col>
           
-          {/* Lương cơ bản - Chỉ Admin/HR mới thấy và sửa được */}
+          {/* Lương & Ca làm việc - Chỉ Admin/HR mới thấy và sửa được */}
           {(isAdmin || isHR) && (
-            <Col xs={24} md={12}>
-              <Form.Item name="base_salary" label="Mức lương cơ bản (VNĐ)" rules={[{ required: true, message: 'Bắt buộc' }]}>
-                <InputNumber 
-                  placeholder="VD: 15,000,000"
-                  style={{ width: '100%' }}
-                  min={0}
-                  step={500000}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value?.replace(/\$\s?|(,*)/g, '')}
-                />
-              </Form.Item>
-            </Col>
+            <>
+              <Col xs={24}>
+                <Divider orientation="left" style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', letterSpacing: '0.5px', margin: '8px 0 16px' }}>
+                  <DollarOutlined style={{ marginRight: 6 }} />
+                  Lương & Ca làm việc
+                </Divider>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="base_salary" label="Lương cơ bản (VNĐ/tháng)">
+                  <InputNumber 
+                    placeholder="VD: 15,000,000"
+                    style={{ width: '100%' }}
+                    min={0}
+                    step={500000}
+                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value?.replace(/,/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="allowance" label="Phụ cấp hàng tháng (VNĐ)">
+                  <InputNumber 
+                    placeholder="VD: 2,000,000"
+                    style={{ width: '100%' }}
+                    min={0}
+                    step={100000}
+                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value?.replace(/,/g, '')}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="work_start_time" label={<><ClockCircleOutlined style={{ marginRight: 4, color: '#10B981' }} />Giờ vào làm</>}>
+                  <TimePicker
+                    format="HH:mm"
+                    minuteStep={15}
+                    style={{ width: '100%' }}
+                    placeholder="VD: 08:00"
+                    needConfirm={false}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="work_end_time" label={<><ClockCircleOutlined style={{ marginRight: 4, color: '#EF4444' }} />Giờ tan làm</>}>
+                  <TimePicker
+                    format="HH:mm"
+                    minuteStep={15}
+                    style={{ width: '100%' }}
+                    placeholder="VD: 17:00"
+                    needConfirm={false}
+                  />
+                </Form.Item>
+              </Col>
+            </>
           )}
 
           <Col span={24}>

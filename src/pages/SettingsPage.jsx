@@ -1,35 +1,32 @@
 import { useState } from 'react'
-import { Form, Input, Button, message, Alert, Typography, Divider } from 'antd'
-import { LockOutlined, SafetyOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
+import { Button, message, Alert, Typography, Divider } from 'antd'
+import { LockOutlined, SafetyOutlined, MailOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/features/auth/context/AuthContext'
 
 const { Title, Text } = Typography
 
 export default function SettingsPage() {
-  const { user, profile } = useAuth()
-  const [form] = Form.useForm()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [successMsg, setSuccessMsg] = useState('')
+  const [sent, setSent] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const handleChangePassword = async (values) => {
+  const handleSendResetEmail = async () => {
     setLoading(true)
-    setSuccessMsg('')
     setErrorMsg('')
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: values.newPassword
+      const { error } = await supabase.auth.resetPasswordForEmail(user?.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       })
 
       if (error) throw error
 
-      message.success('Đổi mật khẩu thành công!')
-      setSuccessMsg('Mật khẩu đã được cập nhật. Vui lòng dùng mật khẩu mới trong lần đăng nhập tiếp theo.')
-      form.resetFields()
+      setSent(true)
+      message.success('Đã gửi email đặt lại mật khẩu!')
     } catch (err) {
-      setErrorMsg(err.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.')
+      setErrorMsg(err.message || 'Gửi email thất bại. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
@@ -67,7 +64,7 @@ export default function SettingsPage() {
       {/* Content */}
       <div style={{ maxWidth: 680, margin: '32px auto', padding: '0 24px' }}>
 
-        {/* Card: Đổi mật khẩu */}
+        {/* Card: Đặt lại mật khẩu */}
         <div className="animate-scale-in" style={{
           background: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
@@ -96,23 +93,13 @@ export default function SettingsPage() {
                 Đặt lại mật khẩu
               </div>
               <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-                Đăng nhập với: <strong style={{ color: 'var(--color-text-secondary)' }}>{user?.email}</strong>
+                Link đặt lại sẽ được gửi đến: <strong style={{ color: 'var(--color-text-secondary)' }}>{user?.email}</strong>
               </div>
             </div>
           </div>
 
           {/* Card Body */}
-          <div style={{ padding: '24px' }}>
-            {successMsg && (
-              <Alert
-                message={successMsg}
-                type="success"
-                showIcon
-                style={{ marginBottom: 20 }}
-                closable
-                onClose={() => setSuccessMsg('')}
-              />
-            )}
+          <div style={{ padding: '28px 24px' }}>
             {errorMsg && (
               <Alert
                 message={errorMsg}
@@ -124,65 +111,64 @@ export default function SettingsPage() {
               />
             )}
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleChangePassword}
-              requiredMark={false}
-            >
-              <Form.Item
-                name="newPassword"
-                label="Mật khẩu mới"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập mật khẩu mới' },
-                  { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự' },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                  placeholder="Nhập mật khẩu mới (tối thiểu 8 ký tự)"
+            {sent ? (
+              /* Trạng thái đã gửi thành công */
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <CheckCircleOutlined style={{ fontSize: 52, color: '#10B981', marginBottom: 16 }} />
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 8 }}>
+                  Email đã được gửi!
+                </div>
+                <div style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.7, maxWidth: 380, margin: '0 auto 24px' }}>
+                  Vui lòng kiểm tra hộp thư <strong>{user?.email}</strong> và nhấn vào link để đặt lại mật khẩu.
+                </div>
+                <Divider style={{ margin: '0 0 20px' }} />
+                <Button
+                  type="text"
+                  size="small"
+                  onClick={() => setSent(false)}
+                  style={{ color: 'var(--color-text-muted)', fontSize: 13 }}
+                >
+                  Chưa nhận được? Gửi lại
+                </Button>
+              </div>
+            ) : (
+              /* Trạng thái ban đầu */
+              <>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 14,
+                  padding: '16px 20px',
+                  background: '#F8FAFC',
+                  borderRadius: 10,
+                  border: '1px solid var(--color-border)',
+                  marginBottom: 24,
+                }}>
+                  <MailOutlined style={{ fontSize: 20, color: '#6366F1', marginTop: 2, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 4 }}>
+                      Quy trình đặt lại mật khẩu
+                    </div>
+                    <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.9 }}>
+                      <li>Nhấn nút bên dưới để gửi email xác nhận</li>
+                      <li>Kiểm tra hộp thư <strong>{user?.email}</strong></li>
+                      <li>Nhấn vào link trong email để đặt mật khẩu mới</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <Button
+                  type="primary"
                   size="large"
-                  iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="confirmPassword"
-                label="Xác nhận mật khẩu mới"
-                dependencies={['newPassword']}
-                rules={[
-                  { required: true, message: 'Vui lòng xác nhận mật khẩu' },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue('newPassword') === value) {
-                        return Promise.resolve()
-                      }
-                      return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'))
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                  placeholder="Nhập lại mật khẩu mới"
-                  size="large"
-                  iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
-                />
-              </Form.Item>
-
-              <Divider style={{ margin: '8px 0 20px' }} />
-
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                size="large"
-                icon={<LockOutlined />}
-                style={{ width: '100%', height: 44, fontWeight: 600, fontSize: 15 }}
-              >
-                {loading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
-              </Button>
-            </Form>
+                  loading={loading}
+                  onClick={handleSendResetEmail}
+                  icon={<MailOutlined />}
+                  style={{ width: '100%', height: 44, fontWeight: 600, fontSize: 15 }}
+                >
+                  {loading ? 'Đang gửi email...' : 'Gửi email đặt lại mật khẩu'}
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
