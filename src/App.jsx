@@ -33,6 +33,7 @@ import DepartmentManagementPage from '@/pages/DepartmentManagementPage'
 import ApprovalCenterPage from '@/pages/ApprovalCenterPage'
 import UnauthorizedPage from '@/pages/UnauthorizedPage'
 import ConnectivityTestPage from '@/pages/ConnectivityTestPage'
+import SettingsPage from '@/pages/SettingsPage'
 
 // Constants
 import { ROLES } from '@/constants/roles'
@@ -159,6 +160,13 @@ function AnimatedRoutes() {
           <Route path="/approval-center" element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.HR]}>
               <PageWrapper><ApprovalCenterPage /></PageWrapper>
+            </ProtectedRoute>
+          } />
+
+          {/* Settings: tất cả role đều truy cập được */}
+          <Route path="/settings" element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.HR, ROLES.MANAGER, ROLES.EMPLOYEE]}>
+              <PageWrapper><SettingsPage /></PageWrapper>
             </ProtectedRoute>
           } />
 

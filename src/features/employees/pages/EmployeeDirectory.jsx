@@ -13,6 +13,7 @@ import LoadingState from '@/components/common/LoadingState'
 import { DEFAULT_FILTERS, VIEW_MODE } from '@/utils/constants'
 import { usePermission } from '@/features/auth/hooks/usePermission'
 import { PERMISSIONS } from '@/constants/roles'
+import AddHrModal from '@/features/employees/components/AddHrModal'
 
 const { Title } = Typography
 
@@ -20,6 +21,7 @@ export default function EmployeeDirectory() {
   const { hasPermission } = usePermission()
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [viewMode, setViewMode] = useState(VIEW_MODE.GRID)
+  const [isHrModalVisible, setIsHrModalVisible] = useState(false)
 
   // Debounce search để tránh quá nhiều request
   const deferredFilters = useDeferredValue(filters)
@@ -91,13 +93,32 @@ export default function EmployeeDirectory() {
 
           {/* Add button - chỉ hiển thị khi có quyền */}
           {hasPermission(PERMISSIONS.CREATE_EMPLOYEE) && (
-            <Link to="/employees/new">
-              <Button type="primary" icon={<UserAddOutlined />} style={{ height: 36 }}>
-                Thêm nhân viên
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button 
+                type="default" 
+                icon={<UserAddOutlined />} 
+                style={{ height: 36 }}
+                onClick={() => setIsHrModalVisible(true)}
+              >
+                Thêm HR
               </Button>
-            </Link>
+              <Link to="/recruitment">
+                <Button type="primary" icon={<TeamOutlined />} style={{ height: 36 }}>
+                  Thêm nhân viên (Tuyển dụng)
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
+
+        <AddHrModal
+          open={isHrModalVisible}
+          onCancel={() => setIsHrModalVisible(false)}
+          onSuccess={() => {
+            setIsHrModalVisible(false)
+            // Invalid queries to refetch
+          }}
+        />
 
         {/* Employee Grid/List */}
         <div style={{

@@ -1,16 +1,17 @@
-import { useState } from 'react'
-import { Form, Input, InputNumber, Button, Select, DatePicker, Upload, message, Result, Steps } from 'antd'
-import { UploadOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Form, Input, InputNumber, Button, Select, DatePicker, Upload, message, Result, Steps, Spin } from 'antd'
+import { UploadOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons'
 import { supabase } from '@/lib/supabaseClient'
 import { useSubmitApplication } from '../hooks/useRecruitment'
 
 const { TextArea } = Input
 
 const PIPELINE_STEPS = [
-  { title: 'Nop Ho so' },
-  { title: 'Xem xet' },
-  { title: 'Phong van' },
-  { title: 'Ket qua' },
+  { title: 'Nộp Hồ sơ' },
+  { title: 'Xem xét' },
+  { title: 'Phỏng vấn' },
+  { title: 'Kết quả' },
 ]
 
 export default function PublicJobApplicationPage() {
@@ -18,7 +19,46 @@ export default function PublicJobApplicationPage() {
   const [cvFile, setCvFile] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  
+  const [searchParams] = useSearchParams()
+  const planCode = searchParams.get('plan')
+  
+  const [planData, setPlanData] = useState(null)
+  const [planStatus, setPlanStatus] = useState(planCode ? 'loading' : 'open') // loading | active | closed | not_found
+  
   const { mutateAsync: submitApplication, isPending } = useSubmitApplication()
+
+  // Fetch Plan Detail
+  useEffect(() => {
+    if (!planCode) return
+    
+    async function fetchPlan() {
+      try {
+        const { data, error } = await supabase
+          .from('recruitment_plans')
+          .select('*')
+          .eq('code', planCode)
+          .single()
+
+        if (error || !data) {
+          setPlanStatus('not_found')
+          return
+        }
+
+        if (data.status === 'closed') {
+          setPlanStatus('closed')
+          return
+        }
+
+        setPlanData(data)
+        setPlanStatus('active')
+        form.setFieldsValue({ position: data.position_title })
+      } catch (err) {
+        setPlanStatus('not_found')
+      }
+    }
+    fetchPlan()
+  }, [planCode, form])
 
   const handleCvUpload = async (file) => {
     setCvFile(file)
@@ -38,7 +78,7 @@ export default function PublicJobApplicationPage() {
         .upload(fileName, cvFile)
 
       if (uploadError) {
-        message.error('Loi tai len CV: ' + uploadError.message)
+        message.error('Lỗi tải lên CV: ' + uploadError.message)
         setUploading(false)
         return
       }
@@ -53,7 +93,7 @@ export default function PublicJobApplicationPage() {
         candidate_name: values.fullName,
         candidate_email: values.email,
         phone: values.phone,
-        position_applied: values.position,
+        position_applied: planData ? planData.position_title : values.position,
         work_history: values.workHistory,
         years_of_experience: values.experience,
         education_summary: values.education,
@@ -62,11 +102,48 @@ export default function PublicJobApplicationPage() {
         cover_letter: values.coverLetter,
         cv_url: cvUrl,
         stage: 'applied',
+        plan_id: planData ? planData.id : null,
+        department_id: planData ? planData.department_id : null
       })
       setSubmitted(true)
     } catch (err) {
-      message.error('Gui don that bai: ' + err.message)
+      message.error('Gửi đơn thất bại: ' + err.message)
     }
+  }
+
+  // --- RENDERING VIEWS ---
+
+  if (planStatus === 'loading') {
+    return (
+      <div style={pageStyle}>
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 100 }}>
+          <Spin size="large" />
+          <h3 style={{ marginTop: 24, color: '#64748B' }}>Đang tải thông tin Tuyển dụng...</h3>
+        </div>
+      </div>
+    )
+  }
+
+  if (planStatus === 'closed' || planStatus === 'not_found') {
+    return (
+      <div style={pageStyle}>
+        <div style={cardStyle}>
+          <Result
+            icon={<WarningOutlined style={{ color: '#F59E0B' }} />}
+            status="warning"
+            title={planStatus === 'closed' ? "Đã đủ chỉ tiêu tuyển dụng" : "Không tìm thấy Chiến dịch"}
+            subTitle={planStatus === 'closed' 
+              ? "Cảm ơn sự quan tâm của bạn. Vị trí này hiện tại đã nhận đủ hồ sơ và tạm thời ngưng tuyển." 
+              : "Đường dẫn ứng tuyển không hợp lệ hoặc chiến dịch đã bị xóa khỏi hệ thống."}
+            extra={
+              <Button type="primary" onClick={() => window.location.href = '/'}>
+                Về Trang chủ
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    )
   }
 
   if (submitted) {
@@ -77,8 +154,8 @@ export default function PublicJobApplicationPage() {
           <Result
             icon={<CheckCircleOutlined style={{ color: '#16A34A' }} />}
             status="success"
-            title="Ho so Da Nop Thanh Cong"
-            subTitle={`Cam on ban da ung tuyen. Chung toi se lien he voi ban qua email trong 3-5 ngay lam viec.`}
+            title="Hồ sơ đã Xong"
+            subTitle={`Cảm ơn bạn đã ứng tuyển vào vị trí ${planData ? planData.position_title : ''}. Chúng tôi sẽ liên hệ với bạn trong vòng 3-5 ngày làm việc.`}
           />
         </div>
       </div>
@@ -92,19 +169,16 @@ export default function PublicJobApplicationPage() {
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <div style={{
-              width: 44,
-              height: 44,
-              background: 'var(--color-primary, #4F46E5)',
-              borderRadius: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: 44, height: 44, background: 'var(--color-primary, #4F46E5)',
+              borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <span style={{ color: '#fff', fontWeight: 900, fontSize: 16 }}>PH</span>
             </div>
             <div>
               <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#0F172A' }}>PeopleHub</h1>
-              <p style={{ margin: 0, fontSize: 13, color: '#64748B' }}>Nop Don Ung tuyen</p>
+              <p style={{ margin: 0, fontSize: 13, color: '#64748B' }}>
+                Nộp Đơn Ứng tuyển {planData ? `— Kế hoạch: ${planData.title}` : ''}
+              </p>
             </div>
           </div>
           <Steps current={-1} items={PIPELINE_STEPS} size="small" />
@@ -119,109 +193,78 @@ export default function PublicJobApplicationPage() {
         >
           {/* Personal Information */}
           <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#1E293B', borderBottom: '1px solid #F1F5F9', paddingBottom: 8 }}>
-            Thong tin Ca nhan
+            Thông tin Cá nhân
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Form.Item
-              name="fullName"
-              label="Ho va Ten"
-              rules={[{ required: true, message: 'Vui long nhap ho ten' }]}
-            >
-              <Input placeholder="Nguyen Van A" />
+            <Form.Item name="fullName" label="Họ và Tên" rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}>
+              <Input placeholder="Nguyễn Văn A" />
             </Form.Item>
-
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[{ required: true, type: 'email', message: 'Email khong hop le' }]}
-            >
+            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email', message: 'Email không hợp lệ' }]}>
               <Input placeholder="email@example.com" />
             </Form.Item>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Form.Item
-              name="phone"
-              label="So Dien thoai"
-              rules={[{ required: true, message: 'Vui long nhap so dien thoai' }]}
-            >
+            <Form.Item name="phone" label="Số Điện thoại" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}>
               <Input placeholder="0912 345 678" />
             </Form.Item>
 
-            <Form.Item
-              name="position"
-              label="Vi tri Ung tuyen"
-              rules={[{ required: true, message: 'Vui long nhap vi tri ung tuyen' }]}
-            >
-              <Input placeholder="Frontend Developer, HR Manager..." />
+            <Form.Item name="position" label="Vị trí Ứng tuyển" rules={[{ required: true, message: 'Vui lòng nhập vị trí ứng tuyển' }]}>
+              <Input placeholder="Frontend Developer, HR Manager..." disabled={!!planData} />
             </Form.Item>
           </div>
 
           {/* Experience & Education */}
           <h3 style={{ margin: '8px 0 16px', fontSize: 15, fontWeight: 700, color: '#1E293B', borderBottom: '1px solid #F1F5F9', paddingBottom: 8 }}>
-            Kinh nghiem & Hoc van
+            Kinh nghiệm & Học vấn
           </h3>
 
-          <Form.Item name="education" label="Trinh do Hoc van">
-            <Input placeholder="Cu nhan Cong nghe Thong tin - DH Bach Khoa HCM" />
+          <Form.Item name="education" label="Trình độ Học vấn">
+            <Input placeholder="Cử nhân Công nghệ Thông tin - ĐH Bách Khoa HCM" />
           </Form.Item>
-
-          <Form.Item name="experience" label="So nam Kinh nghiem">
-            <InputNumber min={0} max={50} style={{ width: '100%' }} placeholder="3" addonAfter="nam" />
+          <Form.Item name="experience" label="Số năm Kinh nghiệm">
+            <InputNumber min={0} max={50} style={{ width: '100%' }} placeholder="3" addonAfter="năm" />
           </Form.Item>
-
-          <Form.Item name="workHistory" label="Lich su Cong viec">
-            <TextArea
-              rows={4}
-              placeholder="Mo ta cac cong ty va vi tri da lam viec truoc day..."
-            />
+          <Form.Item name="workHistory" label="Lịch sử Công việc">
+            <TextArea rows={4} placeholder="Mô tả các công ty và vị trí đã làm việc trước đây..." />
           </Form.Item>
 
           {/* Expectations */}
           <h3 style={{ margin: '8px 0 16px', fontSize: 15, fontWeight: 700, color: '#1E293B', borderBottom: '1px solid #F1F5F9', paddingBottom: 8 }}>
-            Mong muon & Ho so
+            Mong muốn & Hồ sơ
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Form.Item name="expectedSalary" label="Muc luong Mong muon (VND)">
+            <Form.Item name="expectedSalary" label="Mức lương Mong muốn (VND)">
               <InputNumber
-                min={0}
-                style={{ width: '100%' }}
+                min={0} style={{ width: '100%' }}
                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 placeholder="15,000,000"
               />
             </Form.Item>
-
-            <Form.Item name="availableFrom" label="Co the Bat dau tu">
+            <Form.Item name="availableFrom" label="Có thể Bắt đầu từ">
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
             </Form.Item>
           </div>
 
-          <Form.Item name="coverLetter" label="Thu xin Viec (Cover Letter)">
-            <TextArea rows={4} placeholder="Gioi thieu ban than va ly do muon ung tuyen..." />
+          <Form.Item name="coverLetter" label="Thư xin Việc (Cover Letter)">
+            <TextArea rows={4} placeholder="Giới thiệu bản thân và lý do muốn ứng tuyển..." />
           </Form.Item>
 
-          <Form.Item name="cv" label="CV / Ho so (PDF, DOCX)">
-            <Upload
-              beforeUpload={handleCvUpload}
-              maxCount={1}
-              accept=".pdf,.doc,.docx"
-            >
-              <Button icon={<UploadOutlined />}>Chon file CV</Button>
+          <Form.Item name="cv" label="CV / Hồ sơ (PDF, DOCX)">
+            <Upload beforeUpload={handleCvUpload} maxCount={1} accept=".pdf,.doc,.docx">
+              <Button icon={<UploadOutlined />}>Chọn file CV</Button>
             </Upload>
           </Form.Item>
 
           <Form.Item style={{ marginTop: 8 }}>
             <Button
-              type="primary"
-              htmlType="submit"
-              loading={isPending || uploading}
-              block
-              size="large"
+              type="primary" htmlType="submit"
+              loading={isPending || uploading} block size="large"
               style={{ height: 48, borderRadius: 10, fontWeight: 700, fontSize: 15 }}
             >
-              {uploading ? 'Dang tai len CV...' : 'Nop Don Ung tuyen'}
+              {uploading ? 'Đang tải lên CV...' : 'Nộp Đơn Ứng tuyển'}
             </Button>
           </Form.Item>
         </Form>

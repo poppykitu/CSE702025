@@ -13,12 +13,14 @@ export function useApplications(filters = {}) {
         .select(`
           *,
           departments(name),
-          interviewer:profiles!job_applications_interviewer_id_fkey(full_name, email)
+          interviewer:profiles!job_applications_interviewer_id_fkey(full_name, email),
+          plan:recruitment_plans(code, title, status)
         `)
         .order('created_at', { ascending: false })
 
       if (filters.stage) q = q.eq('stage', filters.stage)
       if (filters.department_id) q = q.eq('department_id', filters.department_id)
+      if (filters.plan_id) q = q.eq('plan_id', filters.plan_id)
 
       const { data, error } = await q
       if (error) throw error
@@ -91,22 +93,109 @@ export function useScheduleInterview() {
 }
 
 // =========================================================
-// Convert hired applicant to employee (via RPC)
+// Onboard employee (Edge Function handles Auth + DB + Email)
 // =========================================================
-export function useHireApplicant() {
+export function useOnboardEmployee() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ applicationId, hiredById }) => {
-      const { data, error } = await supabase.rpc('convert_applicant_to_employee', {
-        p_application_id: applicationId,
-        p_hired_by_id: hiredById,
+      const { data, error } = await supabase.functions.invoke('onboard-employee', {
+        body: { applicationId, hiredById }
       })
-      if (error) throw error
+      if (error) throw new Error(error.message)
+      if (data?.error) throw new Error(data.error)
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] })
       queryClient.invalidateQueries({ queryKey: ['employees'] })
+      queryClient.invalidateQueries({ queryKey: ['recruitment_plans'] })
+    },
+  })
+}
+
+// =========================================================
+// Fetch recruitment plans
+// =========================================================
+export function useRecruitmentPlans(filters = {}) {
+  return useQuery({
+    queryKey: ['recruitment_plans', filters],
+    queryFn: async () => {
+      let q = supabase
+        .from('recruitment_plans')
+        .select(`
+          *,
+          departments(name),
+          applications:job_applications(id, stage)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (filters.status) q = q.eq('status', filters.status)
+      if (filters.code) q = q.eq('code', filters.code)
+
+      const { data, error } = await q
+      if (error) throw error
+      return data
+    },
+  })
+}
+
+// =========================================================
+// Create recruitment plan
+// =========================================================
+export function useCreatePlan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (planData) => {
+      const { data, error } = await supabase
+        .from('recruitment_plans')
+        .insert(planData)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recruitment_plans'] }),
+  })
+}
+
+// =========================================================
+// Update plan status
+// =========================================================
+export function useUpdatePlanStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, status }) => {
+      const { data, error } = await supabase
+        .from('recruitment_plans')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recruitment_plans'] }),
+  })
+}
+
+// =========================================================
+// Delete application 
+// =========================================================
+export function useDeleteApplication() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (applicationId) => {
+      const { error } = await supabase
+        .from('job_applications')
+        .delete()
+        .eq('id', applicationId)
+      if (error) throw error
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] })
+      queryClient.invalidateQueries({ queryKey: ['recruitment_plans'] })
     },
   })
 }
