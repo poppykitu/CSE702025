@@ -70,13 +70,14 @@ export function useUpdateApplicationStage() {
 export function useScheduleInterview() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, interview_time, interviewer_id }) => {
+    mutationFn: async ({ id, interview_time, interviewer_id, interview_location }) => {
       const { data, error } = await supabase
         .from('job_applications')
         .update({
           stage: 'interview',
           interview_time,
           interviewer_id,
+          interview_location,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)

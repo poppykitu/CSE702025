@@ -40,13 +40,6 @@ const ALL_NAV_ITEMS = [
     permission: PERMISSIONS.MANAGE_DEPARTMENTS,
   },
   {
-    key: 'leaves',
-    path: '/leaves',
-    label: 'Nghỉ phép',
-    icon: <CalendarOutlined />,
-    roles: ['admin', 'hr', 'manager'],
-  },
-  {
     key: 'my-profile',
     path: '/my-profile',
     label: 'Hồ sơ của tôi',
@@ -70,21 +63,21 @@ const ALL_NAV_ITEMS = [
   {
     key: 'my-payslips',
     path: '/my-payslips',
-    label: 'Bang luong',
+    label: 'Bảng lương',
     icon: <WalletOutlined />,
     roles: ['employee', 'manager', 'hr', 'admin'],
   },
   {
     key: 'recruitment',
     path: '/recruitment',
-    label: 'Tuyen dung',
+    label: 'Tuyển dụng',
     icon: <SolutionOutlined />,
     roles: ['admin', 'hr'],
   },
   {
     key: 'approval-center',
     path: '/approval-center',
-    label: 'Trung tam Phe duyet',
+    label: 'Phê duyệt',
     icon: <CheckSquareOutlined />,
     roles: ['admin', 'hr'],
   },

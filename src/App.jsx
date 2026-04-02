@@ -124,13 +124,6 @@ function AnimatedRoutes() {
             </ProtectedRoute>
           } />
 
-          {/* Quan ly nghi phep: Admin + HR + Manager */}
-          <Route path="/leaves" element={
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.HR, ROLES.MANAGER]}>
-              <PageWrapper><LeaveManagementPage /></PageWrapper>
-            </ProtectedRoute>
-          } />
-
           {/* Trang nhan vien tu phuc vu */}
           <Route path="/my-profile" element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.HR, ROLES.MANAGER, ROLES.EMPLOYEE]}>

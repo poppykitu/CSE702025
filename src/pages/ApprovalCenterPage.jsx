@@ -18,6 +18,8 @@ dayjs.extend(relativeTime)
 const { TextArea } = Input
 const { Text } = Typography
 
+import { getLeaveRequests } from '@/features/leave-management/services/leaveService'
+
 // =========================================================
 // Data hooks (inline for this page)
 // =========================================================
@@ -25,16 +27,16 @@ function usePendingLeaves() {
   return useQuery({
     queryKey: ['approval-leaves'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('leave_requests')
-        .select(`
-          *,
-          employee:profiles!employee_id(full_name, email, employee_id, departments(name))
-        `)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      return data || []
+      const data = await getLeaveRequests()
+      return (data || [])
+        .filter(rec => rec.status === 'pending')
+        .map(rec => ({
+          ...rec,
+          employee: {
+            ...rec.profiles,
+            departments: rec.departments
+          }
+        }))
     },
     refetchInterval: 30000,
   })
@@ -64,11 +66,11 @@ function useApproveLeave() {
 }
 
 const LEAVE_TYPE_LABELS = {
-  annual: 'Nghi nam',
-  sick: 'Nghi om',
-  personal: 'Viec rieng',
-  maternity: 'Thai san',
-  other: 'Khac',
+  annual: 'Nghỉ năm',
+  sick: 'Nghỉ ốm',
+  personal: 'Việc riêng',
+  maternity: 'Thai sản',
+  other: 'Khác',
 }
 
 const STATUS_COLOR = { pending: 'gold', approved: 'success', rejected: 'error', cancelled: 'default' }
@@ -85,15 +87,15 @@ export default function ApprovalCenterPage() {
 
   const handleApprove = async (leave) => {
     Modal.confirm({
-      title: 'Xac nhan Phe duyet',
-      content: `Phe duyet don nghi phep cua ${leave.employee?.full_name}?`,
-      okText: 'Phe duyet',
+      title: 'Xác nhận Phê duyệt',
+      content: `Phê duyệt đơn nghỉ phép của ${leave.employee?.full_name}?`,
+      okText: 'Phê duyệt',
       okType: 'primary',
-      cancelText: 'Huy',
+      cancelText: 'Hủy',
       onOk: async () => {
         try {
           await approveLeave({ id: leave.id, action: 'approve' })
-          message.success('Da phe duyet don nghi phep.')
+          message.success('Đã phê duyệt đơn nghỉ phép.')
         } catch (err) {
           message.error(err.message)
         }
@@ -109,7 +111,7 @@ export default function ApprovalCenterPage() {
   const handleReject = async (values) => {
     try {
       await approveLeave({ id: selectedLeave.id, action: 'reject', reason: values.reason })
-      message.success('Da tu choi don nghi phep.')
+      message.success('Đã từ chối đơn nghỉ phép.')
       setRejectModal(false)
       rejectForm.resetFields()
     } catch (err) {
@@ -119,7 +121,7 @@ export default function ApprovalCenterPage() {
 
   const leaveColumns = [
     {
-      title: 'Nhan vien',
+      title: 'Nhân viên',
       dataIndex: 'employee',
       render: (emp) => (
         <div>
@@ -131,34 +133,34 @@ export default function ApprovalCenterPage() {
       ),
     },
     {
-      title: 'Loai nghi',
+      title: 'Loại nghỉ',
       dataIndex: 'type',
       render: (type) => <Tag color="blue">{LEAVE_TYPE_LABELS[type] || type}</Tag>,
     },
     {
-      title: 'Thoi gian',
+      title: 'Thời gian',
       render: (_, rec) => (
         <div style={{ fontSize: 13 }}>
           <div>{dayjs(rec.start_date).format('DD/MM/YYYY')} — {dayjs(rec.end_date).format('DD/MM/YYYY')}</div>
           <Text type="secondary" style={{ fontSize: 11 }}>
-            {dayjs(rec.end_date).diff(dayjs(rec.start_date), 'day') + 1} ngay
+            {dayjs(rec.end_date).diff(dayjs(rec.start_date), 'day') + 1} ngày
           </Text>
         </div>
       ),
     },
     {
-      title: 'Ly do',
+      title: 'Lý do',
       dataIndex: 'reason',
       ellipsis: true,
-      render: (r) => r || <Text type="secondary">Khong co ly do</Text>,
+      render: (r) => r || <Text type="secondary">Không có lý do</Text>,
     },
     {
-      title: 'Nop luc',
+      title: 'Nộp lúc',
       dataIndex: 'created_at',
       render: (d) => dayjs(d).fromNow(),
     },
     {
-      title: 'Hanh dong',
+      title: 'Hành động',
       key: 'action',
       render: (_, rec) => (
         <Space>
@@ -169,7 +171,7 @@ export default function ApprovalCenterPage() {
             loading={isPending}
             onClick={() => handleApprove(rec)}
           >
-            Duyet
+            Duyệt
           </Button>
           <Button
             size="small"
@@ -177,7 +179,7 @@ export default function ApprovalCenterPage() {
             icon={<CloseOutlined />}
             onClick={() => handleOpenReject(rec)}
           >
-            Tu choi
+            Từ chối
           </Button>
         </Space>
       ),
@@ -190,7 +192,7 @@ export default function ApprovalCenterPage() {
       label: (
         <span>
           <CalendarOutlined style={{ marginRight: 6 }} />
-          Don Nghi phep
+          Đơn Nghỉ phép
           {leaves.length > 0 && (
             <Badge count={leaves.length} style={{ marginLeft: 8, backgroundColor: '#EF4444' }} />
           )}
@@ -202,7 +204,7 @@ export default function ApprovalCenterPage() {
           columns={leaveColumns}
           rowKey="id"
           loading={leavesLoading}
-          locale={{ emptyText: <Empty description="Khong co don nghi phep can phe duyet" /> }}
+          locale={{ emptyText: <Empty description="Không có đơn nghỉ phép cần phê duyệt" /> }}
           pagination={{ pageSize: 8 }}
           size="middle"
         />
@@ -213,12 +215,12 @@ export default function ApprovalCenterPage() {
       label: (
         <span>
           <UserOutlined style={{ marginRight: 6 }} />
-          Cap nhat Ho so
+          Cập nhật Hồ sơ
         </span>
       ),
       children: (
         <Empty
-          description="Tinh nang phe duyet cap nhat ho so se duoc tich hop trong phien tiep theo."
+          description="Tính năng phê duyệt cập nhật hồ sơ sẽ được tích hợp trong phiên bản tiếp theo."
           style={{ padding: '48px 0' }}
         />
       ),
@@ -230,19 +232,19 @@ export default function ApprovalCenterPage() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#0F172A' }}>
-          Trung tam Phe duyet
+          Phê duyệt
         </h1>
         <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: 14 }}>
-          Xem xet va xu ly tat ca cac yeu cau dang cho phe duyet
+          Xem xét và xử lý tất cả các yêu cầu đang chờ phê duyệt
         </p>
       </div>
 
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Don nghi phep cho duyet', count: leaves.length, color: '#F59E0B', bg: '#FFFBEB', icon: <CalendarOutlined /> },
-          { label: 'Cap nhat ho so cho duyet', count: 0, color: '#4F46E5', bg: '#EEF2FF', icon: <UserOutlined /> },
-          { label: 'Ho so ung tuyen moi', count: 0, color: '#0891B2', bg: '#CFFAFE', icon: <FileTextOutlined /> },
+          { label: 'Đơn nghỉ phép chờ duyệt', count: leaves.length, color: '#F59E0B', bg: '#FFFBEB', icon: <CalendarOutlined /> },
+          { label: 'Cập nhật hồ sơ chờ duyệt', count: 0, color: '#4F46E5', bg: '#EEF2FF', icon: <UserOutlined /> },
+          { label: 'Hồ sơ ứng tuyển mới', count: 0, color: '#0891B2', bg: '#CFFAFE', icon: <FileTextOutlined /> },
         ].map((card, i) => (
           <div key={i} style={{
             background: card.bg,
@@ -273,7 +275,7 @@ export default function ApprovalCenterPage() {
 
       {/* Reject Modal */}
       <Modal
-        title={`Tu choi don nghi phep — ${selectedLeave?.employee?.full_name}`}
+        title={`Từ chối đơn nghỉ phép — ${selectedLeave?.employee?.full_name}`}
         open={rejectModal}
         onCancel={() => { setRejectModal(false); rejectForm.resetFields() }}
         footer={null}
@@ -281,13 +283,13 @@ export default function ApprovalCenterPage() {
         <Form form={rejectForm} layout="vertical" onFinish={handleReject}>
           <Form.Item
             name="reason"
-            label="Ly do tu choi"
-            rules={[{ required: true, message: 'Vui long nhap ly do tu choi' }]}
+            label="Lý do từ chối"
+            rules={[{ required: true, message: 'Vui lòng nhập lý do từ chối' }]}
           >
-            <TextArea rows={3} placeholder="Nhan vien can co mat trong giai doan nay..." />
+            <TextArea rows={3} placeholder="Nhân viên cần có mặt trong giai đoạn này..." />
           </Form.Item>
           <Button danger htmlType="submit" block loading={isPending}>
-            Xac nhan Tu choi
+            Xác nhận Từ chối
           </Button>
         </Form>
       </Modal>

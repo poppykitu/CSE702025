@@ -142,6 +142,29 @@ export async function terminateEmployee(id, terminationDate) {
 }
 
 /**
+ * Xóa vĩnh viễn nhân viên (Hard Delete bao gồm auth và profile)
+ */
+export async function hardDeleteEmployee(id) {
+  if (!isSupabaseConfigured) {
+    return { success: true }
+  }
+
+  const { data, error } = await supabase.rpc('hard_delete_employee', { emp_id: id })
+  if (error) throw new Error(error.message)
+  if (data?.success === false) throw new Error(data.error)
+
+  // Log audit event
+  logAuditEvent({
+    tableName: 'profiles',
+    recordId: id,
+    action: 'HARD_DELETE',
+    newData: { status: 'deleted_permanently' }
+  })
+
+  return data
+}
+
+/**
  * Upload ảnh đại diện lên Supabase Storage
  */
 export async function uploadAvatar(file, employeeId) {

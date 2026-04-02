@@ -156,8 +156,8 @@ export default function EmployeeForm({ initialValues = {}, onSubmit, loading = f
       <FormSection title="Thông tin cơ bản">
         <Row gutter={[16, 0]}>
           <Col xs={24} md={12}>
-            <Form.Item name="employee_id" label="Mã nhân viên" rules={[{ required: true, message: 'Bắt buộc' }]}>
-              <Input placeholder="VD: EMP-001" style={{ fontFamily: 'var(--font-mono)' }} disabled={isEdit} />
+            <Form.Item name="employee_id" label="Mã nhân viên" rules={isEdit ? [{ required: true, message: 'Bắt buộc' }] : []}>
+              <Input placeholder={isEdit ? '' : 'Hệ thống sinh tự động (VD: EMP-26000001)'} style={{ fontFamily: 'var(--font-mono)' }} disabled={true} />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>

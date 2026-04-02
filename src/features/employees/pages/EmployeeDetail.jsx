@@ -8,7 +8,7 @@ import {
   ExclamationCircleOutlined, FilePdfOutlined, PlusOutlined, DeleteOutlined,
   BookOutlined, BankOutlined, ClockCircleOutlined,
 } from '@ant-design/icons'
-import { useEmployee, useTerminateEmployee, useUpdateEmployee } from '@/features/employees/hooks/useEmployees'
+import { useEmployee, useTerminateEmployee, useUpdateEmployee, useDeleteEmployee } from '@/features/employees/hooks/useEmployees'
 import EmployeeAvatar from '@/features/employees/components/EmployeeAvatar'
 import StatusBadge from '@/features/employees/components/StatusBadge'
 import {
@@ -30,6 +30,7 @@ export default function EmployeeDetail() {
   const { hasPermission } = usePermission()
   const canEdit = hasPermission(PERMISSIONS.EDIT_ANY_EMPLOYEE)
   const canTerminate = hasPermission(PERMISSIONS.TERMINATE_EMPLOYEE)
+  const deleteMutation = useDeleteEmployee()
 
   if (isLoading) {
     return (
@@ -67,6 +68,26 @@ export default function EmployeeDetail() {
         })
         message.success('Đã cập nhật trạng thái nhân viên')
         navigate('/employees')
+      },
+    })
+  }
+
+  const handleDelete = () => {
+    Modal.confirm({
+      title: 'Xóa vĩnh viễn nhân viên?',
+      icon: <DeleteOutlined style={{ color: '#DC2626' }} />,
+      content: `CẢNH BÁO: Việc này sẽ xóa toàn bộ tài khoản đăng nhập (email) và hồ sơ nhân viên trong Cơ sở dữ liệu để giải phóng cho tài khoản khác. Không thể hoàn tác!`,
+      okText: 'Xóa vĩnh viễn',
+      okButtonProps: { danger: true },
+      cancelText: 'Huỷ bỏ',
+      onOk: async () => {
+        try {
+          await deleteMutation.mutateAsync({ id })
+          message.success('Đã xóa hồ sơ nhân viên tận gốc.')
+          navigate('/employees')
+        } catch(error) {
+          message.error('Không thể xóa: ' + error.message)
+        }
       },
     })
   }
@@ -178,6 +199,17 @@ export default function EmployeeDetail() {
                   style={{ background: 'rgba(255,255,255,0.9)' }}
                 >
                   Cho nghỉ việc
+                </Button>
+              )}
+              {isTerminated && canTerminate && (
+                <Button
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={handleDelete}
+                  loading={deleteMutation.isPending}
+                >
+                  Xóa vĩnh viễn
                 </Button>
               )}
             </div>

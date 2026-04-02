@@ -120,35 +120,39 @@ export default function EmployeeCard({ employee }) {
 
           {/* Contact info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, textAlign: 'left' }}>
+            {/* Email */}
             <Tooltip title={email}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 fontSize: 12, color: 'var(--color-text-secondary)',
+                height: 18,
               }}>
                 <MailOutlined style={{ color: 'var(--color-text-muted)', flexShrink: 0, fontSize: 11 }} />
-                <span className="text-truncate">{email}</span>
+                <span className="text-truncate">{email || '—'}</span>
               </div>
             </Tooltip>
 
-            {phone && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 12, color: 'var(--color-text-secondary)',
-              }}>
-                <PhoneOutlined style={{ color: 'var(--color-text-muted)', flexShrink: 0, fontSize: 11 }} />
-                <span>{phone}</span>
-              </div>
-            )}
+            {/* Phone placeholder logic */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, color: 'var(--color-text-secondary)',
+              height: 18,
+              opacity: phone ? 1 : 0, // Ẩn nhưng giữ chiều cao
+            }}>
+              <PhoneOutlined style={{ color: 'var(--color-text-muted)', flexShrink: 0, fontSize: 11 }} />
+              <span className="text-truncate">{phone || '-'}</span>
+            </div>
 
-            {work_location && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 12, color: 'var(--color-text-secondary)',
-              }}>
-                <EnvironmentOutlined style={{ color: 'var(--color-text-muted)', flexShrink: 0, fontSize: 11 }} />
-                <span className="text-truncate">{work_location}</span>
-              </div>
-            )}
+            {/* Location placeholder logic */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, color: 'var(--color-text-secondary)',
+              height: 18,
+              opacity: work_location ? 1 : 0, // Ẩn nhưng giữ chiều cao
+            }}>
+              <EnvironmentOutlined style={{ color: 'var(--color-text-muted)', flexShrink: 0, fontSize: 11 }} />
+              <span className="text-truncate">{work_location || '-'}</span>
+            </div>
           </div>
         </div>
       </div>

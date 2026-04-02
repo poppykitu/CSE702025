@@ -5,6 +5,7 @@ import {
   createEmployee,
   updateEmployee,
   terminateEmployee,
+  hardDeleteEmployee
 } from '@/features/employees/services/employeeService'
 
 // Query keys
@@ -80,3 +81,18 @@ export function useTerminateEmployee() {
     },
   })
 }
+
+/**
+ * Hook xóa cứng nhân viên
+ */
+export function useDeleteEmployee() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id }) => hardDeleteEmployee(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: EMPLOYEE_KEYS.all })
+    },
+  })
+}
+
