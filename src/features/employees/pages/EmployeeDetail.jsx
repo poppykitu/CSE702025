@@ -1,14 +1,14 @@
+import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Button, Tabs, Descriptions, Tag, Modal, Skeleton, message, Timeline, Empty } from 'antd'
+import { Button, Tabs, Descriptions, Tag, Modal, Skeleton, message, Timeline, Empty, Form, Input } from 'antd'
 import {
   EditOutlined, ArrowLeftOutlined,
   MailOutlined, PhoneOutlined, EnvironmentOutlined,
   CalendarOutlined, TeamOutlined, UserOutlined,
-  ExclamationCircleOutlined, FilePdfOutlined,
+  ExclamationCircleOutlined, FilePdfOutlined, PlusOutlined, DeleteOutlined,
   BookOutlined, BankOutlined, ClockCircleOutlined,
 } from '@ant-design/icons'
-import { useEmployee } from '@/features/employees/hooks/useEmployees'
-import { useTerminateEmployee } from '@/features/employees/hooks/useEmployees'
+import { useEmployee, useTerminateEmployee, useUpdateEmployee } from '@/features/employees/hooks/useEmployees'
 import EmployeeAvatar from '@/features/employees/components/EmployeeAvatar'
 import StatusBadge from '@/features/employees/components/StatusBadge'
 import {
@@ -439,44 +439,158 @@ function AcademicTab({ employee }) {
 // WorkExperienceTab — Kinh nghiem (work_experience JSONB)
 // ============================================================
 function WorkExperienceTab({ employee }) {
-  const records = employee.work_experience || []
+  const [records, setRecords] = useState(employee.work_experience || [])
+  const [modalVisible, setModalVisible] = useState(false)
+  const [editIndex, setEditIndex] = useState(null)
+  const [form] = Form.useForm()
+  const updateMutation = useUpdateEmployee()
+  const { hasPermission } = usePermission()
+  const canEdit = hasPermission(PERMISSIONS.EDIT_ANY_EMPLOYEE)
 
-  if (records.length === 0) {
-    return <Empty description="Chua co lich su cong tac" style={{ padding: '40px 0' }} />
+  const saveRecords = async (newRecords) => {
+    try {
+      await updateMutation.mutateAsync({
+        id: employee.id,
+        data: { work_experience: newRecords },
+      })
+      setRecords(newRecords)
+      message.success('Đã cập nhật kinh nghiệm làm việc')
+    } catch (err) {
+      message.error('Lỗi khi lưu: ' + err.message)
+    }
+  }
+
+  const handleAdd = () => {
+    setEditIndex(null)
+    form.resetFields()
+    setModalVisible(true)
+  }
+
+  const handleEdit = (index) => {
+    setEditIndex(index)
+    form.setFieldsValue(records[index])
+    setModalVisible(true)
+  }
+
+  const handleDelete = (index) => {
+    Modal.confirm({
+      title: 'Xóa kinh nghiệm này?',
+      content: `Xác nhận xóa "${records[index].title}" tại "${records[index].company}"?`,
+      okText: 'Xóa',
+      okButtonProps: { danger: true },
+      cancelText: 'Hủy',
+      onOk: () => {
+        const newRecords = records.filter((_, i) => i !== index)
+        saveRecords(newRecords)
+      },
+    })
+  }
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields()
+      let newRecords
+      if (editIndex !== null) {
+        newRecords = records.map((r, i) => (i === editIndex ? values : r))
+      } else {
+        newRecords = [...records, values]
+      }
+      await saveRecords(newRecords)
+      setModalVisible(false)
+    } catch {
+      // validation error
+    }
   }
 
   return (
     <div style={{ padding: '16px 0' }}>
-      <Timeline
-        items={records.map((item, i) => ({
-          key: i,
-          color: item.to ? 'gray' : 'green',
-          children: (
-            <div style={{
-              background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: 10,
-              padding: '12px 16px',
-              marginBottom: 4,
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#0F172A' }}>{item.title}</div>
-                  <div style={{ fontSize: 13, color: '#4F46E5', fontWeight: 600, marginTop: 2 }}>{item.company}</div>
+      {canEdit && (
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            size="small"
+            style={{ borderRadius: 8 }}
+          >
+            Thêm kinh nghiệm
+          </Button>
+        </div>
+      )}
+
+      {records.length === 0 ? (
+        <Empty description="Chưa có lịch sử công tác" style={{ padding: '40px 0' }} />
+      ) : (
+        <Timeline
+          items={records.map((item, i) => ({
+            key: i,
+            color: item.to ? 'gray' : 'green',
+            children: (
+              <div style={{
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: 10,
+                padding: '12px 16px',
+                marginBottom: 4,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0F172A' }}>{item.title}</div>
+                    <div style={{ fontSize: 13, color: '#4F46E5', fontWeight: 600, marginTop: 2 }}>{item.company}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <Tag color={item.to ? 'default' : 'success'}>
+                      {item.from} — {item.to || 'Hiện tại'}
+                    </Tag>
+                    {canEdit && (
+                      <>
+                        <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEdit(i)} style={{ color: '#4F46E5' }} />
+                        <Button type="text" size="small" icon={<DeleteOutlined />} onClick={() => handleDelete(i)} style={{ color: '#DC2626' }} />
+                      </>
+                    )}
+                  </div>
                 </div>
-                <Tag color={item.to ? 'default' : 'success'}>
-                  {item.from} — {item.to || 'Hien tai'}
-                </Tag>
+                {item.description && (
+                  <div style={{ fontSize: 13, color: '#475569', marginTop: 8, lineHeight: 1.6 }}>
+                    {item.description}
+                  </div>
+                )}
               </div>
-              {item.description && (
-                <div style={{ fontSize: 13, color: '#475569', marginTop: 8, lineHeight: 1.6 }}>
-                  {item.description}
-                </div>
-              )}
-            </div>
-          ),
-        }))}
-      />
+            ),
+          }))}
+        />
+      )}
+
+      <Modal
+        title={editIndex !== null ? 'Chỉnh sửa kinh nghiệm' : 'Thêm kinh nghiệm làm việc'}
+        open={modalVisible}
+        onOk={handleSave}
+        onCancel={() => setModalVisible(false)}
+        okText="Lưu"
+        cancelText="Hủy"
+        confirmLoading={updateMutation.isPending}
+        destroyOnClose
+      >
+        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item name="company" label="Tên công ty" rules={[{ required: true, message: 'Vui lòng nhập tên công ty' }]}>
+            <Input placeholder="VD: Công ty ABC" />
+          </Form.Item>
+          <Form.Item name="title" label="Chức danh / Vị trí" rules={[{ required: true, message: 'Vui lòng nhập chức danh' }]}>
+            <Input placeholder="VD: Frontend Developer" />
+          </Form.Item>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <Form.Item name="from" label="Từ" rules={[{ required: true, message: 'Bắt buộc' }]}>
+              <Input placeholder="VD: 01/2020" />
+            </Form.Item>
+            <Form.Item name="to" label="Đến (để trống nếu đang làm)">
+              <Input placeholder="VD: 12/2023" />
+            </Form.Item>
+          </div>
+          <Form.Item name="description" label="Mô tả công việc">
+            <Input.TextArea rows={3} placeholder="Mô tả ngắn gọn công việc, trách nhiệm, thành tựu..." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }
