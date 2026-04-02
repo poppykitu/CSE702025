@@ -58,12 +58,16 @@ export async function createLeaveRequest(payload) {
 export async function approveLeave(id, comment = '') {
   if (!isSupabaseConfigured) return
 
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user) throw new Error('Không thể xác thực người dùng. Vui lòng đăng nhập lại.')
+
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('id')
     .eq('user_id', user.id)
     .single()
+
+  if (profileError || !profile) throw new Error('Không tìm thấy hồ sơ người dùng.')
 
   const { data, error } = await supabase
     .from('leave_requests')
@@ -71,7 +75,6 @@ export async function approveLeave(id, comment = '') {
       status: 'approved',
       approved_by: profile.id,
       approved_at: new Date().toISOString(),
-      reason: comment // Reuse reason or add a new field if needed, but per schema it's reject_reason
     })
     .eq('id', id)
     .select()
@@ -92,19 +95,23 @@ export async function approveLeave(id, comment = '') {
 export async function rejectLeave(id, reason = '') {
   if (!isSupabaseConfigured) return
 
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError || !user) throw new Error('Không thể xác thực người dùng. Vui lòng đăng nhập lại.')
+
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('id')
     .eq('user_id', user.id)
     .single()
+
+  if (profileError || !profile) throw new Error('Không tìm thấy hồ sơ người dùng.')
 
   const { data, error } = await supabase
     .from('leave_requests')
     .update({
       status: 'rejected',
       reject_reason: reason,
-      approved_by: profile.id, // Using approved_by as the processor
+      approved_by: profile.id,
       approved_at: new Date().toISOString()
     })
     .eq('id', id)

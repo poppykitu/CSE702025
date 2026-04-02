@@ -34,13 +34,11 @@ export function useSubmitApplication() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (formData) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('job_applications')
         .insert(formData)
-        .select()
-        .single()
       if (error) throw error
-      return data
+      return true
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['applications'] }),
   })
